@@ -1,0 +1,49 @@
+# Environment
+.env
+.env.local
+.env.production
+.env.*.local
+
+# Dependencies
+node_modules/
+.pnp
+.pnp.js
+
+# Build outputs
+.next/
+dist/
+build/
+out/
+.turbo/
+
+# Database
+*.db
+*.sqlite
+
+# Prisma generated
+apps/api/src/database/generated/
+
+# Logs
+*.log
+logs/
+npm-debug.log*
+
+# OS
+.DS_Store
+Thumbs.db
+
+# IDE
+.vscode/settings.json
+.idea/
+*.swp
+
+# Uploads / storage
+apps/api/uploads/
+infra/docker/data/
+
+# SSL certs (gerenciados pelo certbot)
+infra/nginx/certs/
+
+# Coverage
+coverage/
+.nyc_output/

@@ -1,0 +1,199 @@
+# =============================================================================
+# AURA EDUCACIONAL — DOCKER COMPOSE
+# Infraestrutura completa: App + DB + Redis + Storage + Proxy
+# =============================================================================
+
+version: '3.9'
+
+services:
+
+  # ─── BANCO DE DADOS ────────────────────────────────────────────────────────
+  postgres:
+    image: postgres:16-alpine
+    container_name: aura_postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-aura_educacional}
+      POSTGRES_USER: ${POSTGRES_USER:-aura}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}    # Nunca hardcode — use .env
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./scripts/init.sql:/docker-entrypoint-initdb.d/init.sql:ro
+    ports:
+      - "127.0.0.1:5432:5432"                    # Apenas localhost (não expor externamente)
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-aura}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - aura_internal
+
+  # ─── REDIS (cache, sessões, filas, rate limiting) ──────────────────────────
+  redis:
+    image: redis:7-alpine
+    container_name: aura_redis
+    restart: unless-stopped
+    command: >
+      redis-server
+      --requirepass ${REDIS_PASSWORD}
+      --maxmemory 512mb
+      --maxmemory-policy allkeys-lru
+      --appendonly yes
+    volumes:
+      - redis_data:/data
+    ports:
+      - "127.0.0.1:6379:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "-a", "${REDIS_PASSWORD}", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - aura_internal
+
+  # ─── API (Fastify) ─────────────────────────────────────────────────────────
+  api:
+    build:
+      context: ../../apps/api
+      dockerfile: Dockerfile
+      target: production
+    container_name: aura_api
+    restart: unless-stopped
+    env_file: ../../apps/api/.env
+    environment:
+      NODE_ENV: production
+      DATABASE_URL: postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB}
+      REDIS_URL: redis://:${REDIS_PASSWORD}@redis:6379
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    volumes:
+      - uploads_data:/app/uploads
+    networks:
+      - aura_internal
+      - aura_external
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3001/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # ─── WEB (Next.js) ─────────────────────────────────────────────────────────
+  web:
+    build:
+      context: ../../apps/web
+      dockerfile: Dockerfile
+      target: production
+    container_name: aura_web
+    restart: unless-stopped
+    env_file: ../../apps/web/.env
+    environment:
+      NODE_ENV: production
+      NEXT_PUBLIC_API_URL: https://api.aura-educacional.com.br
+    depends_on:
+      - api
+    networks:
+      - aura_internal
+      - aura_external
+
+  # ─── NGINX (reverse proxy + SSL) ───────────────────────────────────────────
+  nginx:
+    image: nginx:alpine
+    container_name: aura_nginx
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./nginx/sites:/etc/nginx/conf.d:ro
+      - certbot_certs:/etc/letsencrypt:ro
+      - certbot_www:/var/www/certbot:ro
+    depends_on:
+      - api
+      - web
+    networks:
+      - aura_external
+    healthcheck:
+      test: ["CMD", "nginx", "-t"]
+      interval: 60s
+      timeout: 5s
+      retries: 3
+
+  # ─── CERTBOT (SSL automático Let's Encrypt) ─────────────────────────────────
+  certbot:
+    image: certbot/certbot
+    container_name: aura_certbot
+    volumes:
+      - certbot_certs:/etc/letsencrypt
+      - certbot_www:/var/www/certbot
+    command: >
+      certonly --webroot -w /var/www/certbot
+      --email ${SSL_EMAIL}
+      --agree-tos --no-eff-email
+      -d aura-educacional.com.br
+      -d www.aura-educacional.com.br
+      -d api.aura-educacional.com.br
+
+  # ─── MINIO (armazenamento de arquivos — S3 compatível) ──────────────────────
+  minio:
+    image: minio/minio:latest
+    container_name: aura_minio
+    restart: unless-stopped
+    command: server /data --console-address ":9001"
+    environment:
+      MINIO_ROOT_USER: ${MINIO_ROOT_USER}
+      MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD}
+    volumes:
+      - minio_data:/data
+    ports:
+      - "127.0.0.1:9000:9000"
+      - "127.0.0.1:9001:9001"    # Console MinIO (apenas localhost)
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:9000/minio/health/live"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    networks:
+      - aura_internal
+
+  # ─── PGADMIN (dev only — remover em produção) ───────────────────────────────
+  pgadmin:
+    image: dpage/pgadmin4:latest
+    container_name: aura_pgadmin
+    profiles: ["dev"]            # Só sobe com: docker compose --profile dev up
+    environment:
+      PGADMIN_DEFAULT_EMAIL: ${PGADMIN_EMAIL:-admin@aura.local}
+      PGADMIN_DEFAULT_PASSWORD: ${PGADMIN_PASSWORD}
+    ports:
+      - "127.0.0.1:5050:80"
+    networks:
+      - aura_internal
+    depends_on:
+      - postgres
+
+# ─── VOLUMES ────────────────────────────────────────────────────────────────
+volumes:
+  postgres_data:
+    driver: local
+  redis_data:
+    driver: local
+  minio_data:
+    driver: local
+  uploads_data:
+    driver: local
+  certbot_certs:
+    driver: local
+  certbot_www:
+    driver: local
+
+# ─── NETWORKS ───────────────────────────────────────────────────────────────
+networks:
+  aura_internal:
+    driver: bridge
+    internal: true              # Sem acesso externo direto
+  aura_external:
+    driver: bridge
