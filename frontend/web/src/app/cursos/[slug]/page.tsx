@@ -1,6 +1,8 @@
 import Link from 'next/link'
 import { fetchFromApi } from '../../../lib/api'
 
+export const runtime = 'edge'
+
 type CourseDetail = {
   slug: string
   title: string

@@ -175,6 +175,7 @@ const faqItems = [
 ]
 
 export const dynamic = 'force-dynamic'
+export const runtime = 'edge'
 
 export default async function HomePage() {
   const [overview, courses] = await Promise.all([

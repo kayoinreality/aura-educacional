@@ -5,6 +5,8 @@ import { useParams, useRouter } from 'next/navigation'
 import { fetchFromApi } from '../../../lib/api'
 import { authFetch } from '../../../lib/auth-client'
 
+export const runtime = 'edge'
+
 type CheckoutSummary = {
   course: {
     title: string

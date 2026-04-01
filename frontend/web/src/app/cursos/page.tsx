@@ -1,6 +1,8 @@
 import Link from 'next/link'
 import { fetchFromApiOrDefault } from '../../lib/api'
 
+export const runtime = 'edge'
+
 type CourseList = {
   data: Array<{
     id: string

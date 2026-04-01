@@ -5,6 +5,8 @@ import { useEffect, useState } from 'react'
 import { useParams } from 'next/navigation'
 import { authFetch } from '../../../../lib/auth-client'
 
+export const runtime = 'edge'
+
 type AssessmentPayload = {
   id: string
   title: string

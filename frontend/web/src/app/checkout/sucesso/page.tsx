@@ -2,6 +2,7 @@ import { Suspense } from 'react'
 import { CheckoutSuccessClient } from './success-client'
 
 export const dynamic = 'force-dynamic'
+export const runtime = 'edge'
 
 export default function CheckoutSuccessPage() {
   return (
