@@ -1,0 +1,57 @@
+{
+  "name": "@aura/api",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "tsx watch src/server.ts",
+    "build": "tsc -p tsconfig.json",
+    "start": "node dist/server.js",
+    "lint": "eslint src --ext .ts",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "db:migrate": "prisma migrate deploy --schema src/database/schema.prisma",
+    "db:migrate:dev": "prisma migrate dev --schema src/database/schema.prisma",
+    "db:seed": "tsx src/database/seeds/index.ts",
+    "db:studio": "prisma studio --schema src/database/schema.prisma",
+    "db:generate": "prisma generate --schema src/database/schema.prisma"
+  },
+  "prisma": {
+    "schema": "src/database/schema.prisma"
+  },
+  "dependencies": {
+    "@aura/types": "*",
+    "@aura/utils": "*",
+    "@fastify/cookie": "^9.3.0",
+    "@fastify/cors": "^9.0.0",
+    "@fastify/helmet": "^11.1.0",
+    "@fastify/jwt": "^8.0.0",
+    "@fastify/multipart": "^8.3.0",
+    "@fastify/rate-limit": "^9.1.0",
+    "@prisma/client": "^5.17.0",
+    "bcryptjs": "^2.4.3",
+    "bull": "^4.16.0",
+    "dayjs": "^1.11.0",
+    "fastify": "^4.28.0",
+    "fastify-raw-body": "^4.3.0",
+    "google-auth-library": "^9.14.2",
+    "ioredis": "^5.4.0",
+    "nanoid": "^5.0.0",
+    "nodemailer": "^6.9.0",
+    "pdfkit": "^0.15.0",
+    "pino": "^9.3.0",
+    "pino-pretty": "^11.2.0",
+    "qrcode": "^1.5.3",
+    "sharp": "^0.33.4",
+    "stripe": "^16.5.0",
+    "zod": "^3.23.0"
+  },
+  "devDependencies": {
+    "@types/bcryptjs": "^2.4.6",
+    "@types/node": "^20.0.0",
+    "@types/nodemailer": "^6.4.0",
+    "@types/pdfkit": "^0.13.0",
+    "@types/qrcode": "^1.5.0",
+    "prisma": "^5.17.0",
+    "tsx": "^4.16.0",
+    "typescript": "^5.5.0"
+  }
+}

@@ -2,9 +2,11 @@
   "name": "aura-educacional",
   "private": true,
   "version": "1.0.0",
-  "description": "Aura Educacional — Plataforma de Cursos Livres e Certificados",
+  "packageManager": "npm@10.9.0",
+  "description": "Aura Educacional - Plataforma de cursos livres e certificados",
   "workspaces": [
-    "apps/*",
+    "frontend/*",
+    "backend/*",
     "packages/*"
   ],
   "scripts": {
@@ -13,10 +15,20 @@
     "test": "turbo run test",
     "lint": "turbo run lint",
     "format": "prettier --write \"**/*.{ts,tsx,md,json}\"",
+    "dev:web": "npm --workspace @aura/web run dev",
+    "dev:admin": "npm --workspace @aura/admin run dev",
+    "dev:api": "npm --workspace @aura/api run dev",
     "db:migrate": "turbo run db:migrate",
     "db:seed": "turbo run db:seed",
-    "docker:up": "docker-compose -f infra/docker/docker-compose.yml up -d",
-    "docker:down": "docker-compose -f infra/docker/docker-compose.yml down"
+    "db:generate:api": "npm --workspace @aura/api run db:generate",
+    "db:migrate:api": "npm --workspace @aura/api run db:migrate",
+    "db:seed:api": "npm --workspace @aura/api run db:seed",
+    "docker:up": "docker compose --env-file infra/docker/.env -f infra/docker/docker-compose.yml up -d",
+    "docker:down": "docker compose --env-file infra/docker/.env -f infra/docker/docker-compose.yml down",
+    "docker:dev:up": "docker compose --env-file infra/docker/.env -f infra/docker/docker-compose.dev.yml --profile tools up -d",
+    "docker:dev:down": "docker compose --env-file infra/docker/.env -f infra/docker/docker-compose.dev.yml --profile tools down",
+    "docker:dev:logs": "docker compose --env-file infra/docker/.env -f infra/docker/docker-compose.dev.yml logs -f",
+    "docker:dev:ps": "docker compose --env-file infra/docker/.env -f infra/docker/docker-compose.dev.yml ps"
   },
   "devDependencies": {
     "turbo": "^2.0.0",
@@ -32,7 +44,12 @@
     "npm": ">=10.0.0"
   },
   "lint-staged": {
-    "*.{ts,tsx}": ["eslint --fix", "prettier --write"],
-    "*.{md,json,yml}": ["prettier --write"]
+    "*.{ts,tsx}": [
+      "eslint --fix",
+      "prettier --write"
+    ],
+    "*.{md,json,yml}": [
+      "prettier --write"
+    ]
   }
 }

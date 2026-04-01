@@ -1,68 +1,110 @@
-# 🚀 AURA Educacional — Guia de Deploy
+# Aura Educacional - Guia de Deploy
 
-## Opções de Hospedagem Recomendadas
+## Estrategia recomendada
 
-### Opção A — VPS (Recomendado para início)
-**Custo: R$60–150/mês | Escala: até ~5.000 alunos ativos**
+Para o estado atual do projeto, o melhor caminho e:
 
-| Serviço | Provedor | Custo |
-|---------|----------|-------|
-| VPS 4vCPU / 8GB RAM | Hetzner CX31 ou Contabo | ~R$80/mês |
-| Domínio .com.br | Registro.br | ~R$40/ano |
-| E-mail transacional | Resend.com | Grátis até 3k/mês |
-| Pagamentos | Stripe | 3.4% + R$0,40 por transação |
+- manter o monorepo
+- publicar o frontend publico no Cloudflare Pages
+- subir o backend/API na VPS
+- manter PostgreSQL, Redis e rotinas internas na VPS
 
-**Setup mínimo recomendado:**
-- Ubuntu 24.04 LTS
-- Docker + Docker Compose
-- Nginx (já no compose)
-- Let's Encrypt (já no compose)
+Isso preserva o compartilhamento de `packages/*` sem separar repositorios antes da hora.
 
-### Opção B — Cloud Gerenciada (Escala futura)
-**Para quando superar 5.000+ alunos:**
+## Estrutura usada no deploy
 
-| Componente | Serviço |
-|-----------|---------|
-| API | Railway, Render ou ECS |
-| Banco | Neon (Postgres serverless) ou RDS |
-| Redis | Upstash Redis |
-| Storage | AWS S3 + CloudFront |
-| Vídeos | Mux ou Cloudflare Stream |
-| Email | Amazon SES |
+```text
+frontend/web    -> site publico
+frontend/admin  -> console administrativo
+backend/api     -> API principal
+packages/*      -> codigo compartilhado
+```
 
----
+## Frontend no Cloudflare Pages
 
-## Deploy na VPS — Passo a Passo
+### Variaveis de ambiente
+
+No projeto do Cloudflare Pages, configure:
+
+```bash
+NEXT_PUBLIC_API_URL=https://api.seu-dominio.com
+NEXT_PUBLIC_GOOGLE_CLIENT_ID=seu-client-id.apps.googleusercontent.com
+```
+
+Enquanto a VPS nao estiver no ar, o frontend pode ser publicado, mas login, checkout,
+area do aluno e certificados so vao funcionar completamente quando a API estiver acessivel.
+
+### Configuracao recomendada do projeto
+
+Use estas referencias ao criar o Pages project:
+
+- Framework preset: `Next.js`
+- Production branch: `main`
+- Root directory: `/`
+- Build command: `npm install && npm --workspace @aura/web run cf:build`
+- Build output directory: `.vercel/output/static`
+
+Como este e um monorepo, mantenha o repositório inteiro conectado ao Pages e deixe o build
+rodar a partir da raiz.
+
+### Observacao sobre Next.js
+
+O frontend atual consome a API externa e usa rotas dinamicas. Por isso, a configuracao de
+producao depende do dominio final da API e do CORS correto no backend.
+
+## Backend na VPS
+
+### Variaveis de ambiente de producao
+
+Antes de subir a API, ajuste o `.env` com valores reais, por exemplo:
+
+```bash
+NODE_ENV=production
+APP_URL=https://seu-projeto.pages.dev
+API_URL=https://api.seu-dominio.com
+CORS_ORIGINS=https://seu-projeto.pages.dev,https://www.seu-dominio.com
+COOKIE_DOMAIN=
+```
+
+Use `COOKIE_DOMAIN` apenas se for realmente compartilhar o cookie entre subdominios do mesmo
+dominio raiz. Se o frontend estiver em `pages.dev`, deixe esse campo vazio.
+
+### CORS e autenticacao cross-origin
+
+O backend precisa aceitar:
+
+- a origem do frontend publicado
+- `credentials: include`
+- cookie `refresh_token` com `SameSite=None` e `Secure=true` em producao quando frontend e API
+  estiverem em origens diferentes
+
+Esses ajustes ja foram implementados no projeto.
+
+## Deploy na VPS - passo a passo
 
 ### 1. Preparar o servidor
 
 ```bash
-# Atualizar sistema
 apt update && apt upgrade -y
-
-# Instalar Docker
 curl -fsSL https://get.docker.com | sh
 usermod -aG docker $USER
-
-# Instalar Docker Compose
 apt install docker-compose-plugin -y
 
-# Configurar firewall
-ufw allow 22/tcp    # SSH
-ufw allow 80/tcp    # HTTP
-ufw allow 443/tcp   # HTTPS
+ufw allow 22/tcp
+ufw allow 80/tcp
+ufw allow 443/tcp
 ufw enable
 ```
 
 ### 2. Configurar DNS
 
-No painel do seu domínio, adicione:
+No painel do dominio, adicione:
+
+```text
+A    @      -> IP_DO_SERVIDOR
+A    www    -> IP_DO_SERVIDOR
+A    api    -> IP_DO_SERVIDOR
 ```
-A    @              → IP_DO_SERVIDOR
-A    www            → IP_DO_SERVIDOR
-A    api            → IP_DO_SERVIDOR
-```
-Aguarde propagação (até 24h, geralmente minutos).
 
 ### 3. Clonar e configurar
 
@@ -71,68 +113,46 @@ cd /opt
 git clone https://github.com/seu-usuario/aura-educacional.git
 cd aura-educacional
 
-# Configurar variáveis de ambiente
 cp .env.example .env
-nano .env  # Preencher todos os valores
+nano .env
+```
 
-# Gerar secrets seguros
+Para gerar secrets seguros:
+
+```bash
 node -e "console.log(require('crypto').randomBytes(64).toString('hex'))"
-# Execute 3x e use os valores para JWT_SECRET, JWT_REFRESH_SECRET, NEXTAUTH_SECRET
 ```
 
-### 4. Build e subir
+### 4. Subir infraestrutura e aplicar banco
 
 ```bash
-# Subir infraestrutura
+npm install
 npm run docker:up
-
-# Aguardar postgres e redis ficarem saudáveis
-docker compose -f infra/docker/docker-compose.yml ps
-
-# Rodar migrações
-npm run db:migrate
-
-# Rodar seed inicial (admin user + categorias)
-npm run db:seed
+npm run db:migrate:api
+npm run db:seed:api
 ```
 
-### 5. Obter certificado SSL
+### 5. Validar a API
 
 ```bash
-# Primeiro, certifique-se que Nginx está rodando
-docker compose -f infra/docker/docker-compose.yml run certbot
+curl https://api.seu-dominio.com/health
 ```
 
-### 6. Verificar tudo
+### 6. Ver logs
 
 ```bash
-# Checar saúde dos serviços
-curl https://api.aura-educacional.com.br/health
-
-# Checar logs
-docker compose logs api --tail=50
-docker compose logs web --tail=50
+docker compose --env-file infra/docker/.env -f infra/docker/docker-compose.yml logs api --tail=50
+docker compose --env-file infra/docker/.env -f infra/docker/docker-compose.yml logs postgres --tail=50
+docker compose --env-file infra/docker/.env -f infra/docker/docker-compose.yml logs redis --tail=50
 ```
 
----
+## Checklist rapido de producao
 
-## Backups Automáticos
-
-Configure um cron para backup diário do banco:
-
-```bash
-# No servidor, editar crontab
-crontab -e
-
-# Adicionar:
-0 3 * * * /opt/aura-educacional/infra/scripts/backup-db.sh >> /var/log/aura-backup.log 2>&1
-```
-
----
-
-## Monitoramento Recomendado
-
-- **Uptime**: BetterUptime (gratuito) ou UptimeRobot
-- **Erros**: Sentry (plano free generoso)
-- **Logs**: Logtail ou Grafana Loki
-- **Métricas**: Grafana + Prometheus (avançado)
+- frontend publicado no Cloudflare Pages
+- `NEXT_PUBLIC_API_URL` apontando para a API real
+- backend com `NODE_ENV=production`
+- `APP_URL` e `API_URL` corretos
+- `CORS_ORIGINS` contendo o dominio do frontend
+- HTTPS ativo na API
+- Stripe webhook apontando para a URL publica da API
+- Google OAuth com dominios autorizados de producao
