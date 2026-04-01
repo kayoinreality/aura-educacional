@@ -42,7 +42,7 @@ Use estas referencias ao criar o Pages project:
 - Production branch: `main`
 - Root directory: `/`
 - Build command: `npm install && npm --workspace @aura/web run cf:build`
-- Build output directory: `.vercel/output/static`
+- Build output directory: `frontend/web/.vercel/output/static`
 
 Como este e um monorepo, mantenha o repositório inteiro conectado ao Pages e deixe o build
 rodar a partir da raiz.
