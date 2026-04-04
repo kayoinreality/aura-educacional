@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react'
 import { useParams, useRouter } from 'next/navigation'
 import { fetchFromApi } from '../../../lib/api'
 import { authFetch } from '../../../lib/auth-client'
+import { getFallbackCheckoutSummary } from '../../../lib/public-fallback'
 
 export const runtime = 'edge'
 
@@ -39,6 +40,7 @@ export default function CheckoutPage() {
   const [paymentMethod, setPaymentMethod] = useState<'CREDIT_CARD' | 'PIX' | 'BOLETO'>('CREDIT_CARD')
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [usingFallback, setUsingFallback] = useState(false)
 
   useEffect(() => {
     const run = async () => {
@@ -46,8 +48,15 @@ export default function CheckoutPage() {
         const query = coupon ? `?coupon=${encodeURIComponent(coupon)}` : ''
         const payload = await fetchFromApi<CheckoutSummary>(`/checkout/summary/${params.slug}${query}`)
         setSummary(payload)
+        setUsingFallback(false)
       } catch (caughtError) {
-        setError(caughtError instanceof Error ? caughtError.message : 'Falha ao carregar checkout.')
+        setSummary(getFallbackCheckoutSummary(params.slug))
+        setUsingFallback(true)
+        setError(
+          caughtError instanceof Error
+            ? 'Checkout em modo demonstracao ate a API entrar em producao.'
+            : 'Checkout em modo demonstracao ate a API entrar em producao.'
+        )
       }
     }
 
@@ -55,6 +64,11 @@ export default function CheckoutPage() {
   }, [params.slug, coupon])
 
   async function handlePurchase() {
+    if (usingFallback) {
+      setError('O pagamento sera liberado quando a API publica estiver online.')
+      return
+    }
+
     setLoading(true)
     setError(null)
 

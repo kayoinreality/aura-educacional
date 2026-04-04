@@ -1,5 +1,6 @@
 import Link from 'next/link'
-import { fetchFromApi } from '../../../lib/api'
+import { fetchFromApiOrDefault } from '../../../lib/api'
+import { getFallbackCourseDetail } from '../../../lib/public-fallback'
 
 export const runtime = 'edge'
 
@@ -60,7 +61,10 @@ export default async function CourseDetailPage({
   params: Promise<{ slug: string }>
 }) {
   const { slug } = await params
-  const course = await fetchFromApi<CourseDetail>(`/courses/${slug}`)
+  const course = await fetchFromApiOrDefault<CourseDetail>(
+    `/courses/${slug}`,
+    getFallbackCourseDetail(slug)
+  )
 
   return (
     <main className="app-shell">

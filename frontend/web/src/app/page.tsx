@@ -1,6 +1,10 @@
 import Link from 'next/link'
 import { CourseTabs } from '../components/course-tabs'
 import { fetchFromApiOrDefault } from '../lib/api'
+import {
+  fallbackCourseListPayload,
+  fallbackPublicOverview,
+} from '../lib/public-fallback'
 
 type PublicOverview = {
   totals: {
@@ -52,21 +56,6 @@ type CourseList = {
       }
     }
   }>
-}
-
-const emptyOverview: PublicOverview = {
-  totals: {
-    publishedCourses: 0,
-    totalEnrollments: 0,
-    averagePrice: 0,
-    averageRating: 0,
-    averageHours: 0,
-  },
-  categories: [],
-}
-
-const emptyCourses: CourseList = {
-  data: [],
 }
 
 const journeySteps = [
@@ -179,11 +168,12 @@ export const runtime = 'edge'
 
 export default async function HomePage() {
   const [overview, courses] = await Promise.all([
-    fetchFromApiOrDefault<PublicOverview>('/dashboard/public-overview', emptyOverview),
-    fetchFromApiOrDefault<CourseList>('/courses?page=1&pageSize=18', emptyCourses),
+    fetchFromApiOrDefault<PublicOverview>('/dashboard/public-overview', fallbackPublicOverview),
+    fetchFromApiOrDefault<CourseList>('/courses?page=1&pageSize=18', fallbackCourseListPayload),
   ])
 
-  const apiUnavailable = overview.totals.publishedCourses === 0 && courses.data.length === 0
+  const apiUnavailable =
+    overview === fallbackPublicOverview || courses === fallbackCourseListPayload
 
   const tabs = [
     { id: 'all', label: 'Todos' },

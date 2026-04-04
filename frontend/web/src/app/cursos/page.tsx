@@ -1,5 +1,6 @@
 import Link from 'next/link'
 import { fetchFromApiOrDefault } from '../../lib/api'
+import { fallbackCourseListPayload } from '../../lib/public-fallback'
 
 export const runtime = 'edge'
 
@@ -28,9 +29,10 @@ type CourseList = {
 }
 
 export default async function CoursesPage() {
-  const payload = await fetchFromApiOrDefault<CourseList>('/courses?page=1&pageSize=24', {
-    data: [],
-  })
+  const payload = await fetchFromApiOrDefault<CourseList>(
+    '/courses?page=1&pageSize=24',
+    fallbackCourseListPayload
+  )
 
   return (
     <main className="app-shell">
