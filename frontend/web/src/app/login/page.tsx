@@ -27,7 +27,7 @@ export default function LoginPage() {
       router.push('/meus-cursos')
       router.refresh()
     } catch (caughtError) {
-      setError(caughtError instanceof Error ? caughtError.message : 'Falha ao entrar.')
+      setError(caughtError instanceof Error ? caughtError.message : 'Não foi possível realizar o acesso.')
     } finally {
       setLoading(false)
     }
@@ -36,10 +36,10 @@ export default function LoginPage() {
   return (
     <main className="app-shell app-shell--narrow">
       <section className="auth-card">
-        <span className="tag">Login</span>
-        <h1 className="section-title serif">Entre para acessar seus cursos e certificados</h1>
+        <span className="tag">Acesso</span>
+        <h1 className="section-title serif">Entre para acessar seus cursos, avaliações e certificados</h1>
         <p className="section-sub section-sub--left">
-          Use sua conta da plataforma ou entre com Google quando a chave estiver configurada.
+          Utilize seu cadastro na plataforma ou, se disponível, prossiga com autenticação pela conta Google.
         </p>
 
         <form className="auth-form" onSubmit={handleSubmit}>
@@ -56,7 +56,7 @@ export default function LoginPage() {
             />
           </label>
           <button className="public-button" disabled={loading} type="submit">
-            {loading ? 'Entrando...' : 'Entrar na plataforma'}
+            {loading ? 'Validando acesso...' : 'Entrar na plataforma'}
           </button>
         </form>
 
@@ -69,7 +69,11 @@ export default function LoginPage() {
               router.push('/meus-cursos')
               router.refresh()
             } catch (caughtError) {
-              setError(caughtError instanceof Error ? caughtError.message : 'Falha no login Google.')
+              setError(
+                caughtError instanceof Error
+                  ? caughtError.message
+                  : 'Não foi possível concluir o acesso com a conta Google.'
+              )
             }
           }}
         />

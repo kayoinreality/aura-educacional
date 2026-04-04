@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import { formatCourseLevel, formatCurrency } from '../lib/formatters'
 
 type Course = {
   id: string
@@ -37,12 +38,6 @@ type Course = {
 type Tab = {
   id: string
   label: string
-}
-
-function levelLabel(level: string) {
-  if (level === 'BEGINNER') return 'Iniciante'
-  if (level === 'INTERMEDIATE') return 'Intermediario'
-  return 'Avancado'
 }
 
 function colorForCourse(course: Course) {
@@ -118,17 +113,17 @@ export function CourseTabs({
 
             <div className="course-footer">
               <div className="course-meta">
-                <div className="course-meta-item">{levelLabel(course.level)}</div>
+                <div className="course-meta-item">{formatCourseLevel(course.level)}</div>
                 <div className="course-meta-item">{course.totalHours}h</div>
                 <div className="course-meta-item">{course.totalLessons} aulas</div>
               </div>
 
               <div className="course-price">
                 {course.originalPrice ? (
-                  <span className="price-old">R$ {course.originalPrice.toFixed(2)}</span>
+                  <span className="price-old">{formatCurrency(course.originalPrice)}</span>
                 ) : null}
                 <span className="price-main">
-                  {course.isFree ? 'Gratis' : `R$ ${course.price.toFixed(0)}`}
+                  {course.isFree ? 'Gratuito' : formatCurrency(course.price)}
                 </span>
               </div>
             </div>
@@ -138,7 +133,7 @@ export function CourseTabs({
                 Ver curso
               </a>
               <a className="public-button" href={`/checkout/${course.slug}`}>
-                Ir para checkout
+                Prosseguir para a compra
               </a>
             </div>
           </article>
@@ -147,10 +142,10 @@ export function CourseTabs({
         {filteredCourses.length === 0 ? (
           <article className="course-card course-card--empty">
             <div className="course-body">
-              <div className="course-cat-tag">Catalogo</div>
-              <h3 className="course-title">Nenhum curso nesta trilha agora</h3>
+              <div className="course-cat-tag">Catálogo</div>
+              <h3 className="course-title">Nenhum curso disponível nesta trilha</h3>
               <p className="course-desc">
-                Assim que a API devolver cursos dessa categoria, a aba sera preenchida automaticamente.
+                Assim que houver cursos publicados nesta categoria, esta seção será atualizada automaticamente.
               </p>
             </div>
           </article>

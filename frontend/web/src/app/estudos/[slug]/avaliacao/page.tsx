@@ -4,6 +4,7 @@ import Link from 'next/link'
 import { useEffect, useState } from 'react'
 import { useParams } from 'next/navigation'
 import { authFetch } from '../../../../lib/auth-client'
+import { formatPercent } from '../../../../lib/formatters'
 
 export const runtime = 'edge'
 
@@ -43,7 +44,7 @@ export default function AssessmentPage() {
     authFetch<AssessmentPayload>(`/learning/courses/${params.slug}/assessment`)
       .then(setAssessment)
       .catch((caughtError) =>
-        setError(caughtError instanceof Error ? caughtError.message : 'Falha ao carregar avaliacao.')
+        setError(caughtError instanceof Error ? caughtError.message : 'Não foi possível carregar a avaliação.')
       )
   }, [params.slug])
 
@@ -64,20 +65,20 @@ export default function AssessmentPage() {
       setResult(payload)
       setError(null)
     } catch (caughtError) {
-      setError(caughtError instanceof Error ? caughtError.message : 'Falha ao enviar avaliacao.')
+      setError(caughtError instanceof Error ? caughtError.message : 'Não foi possível enviar a avaliação.')
     }
   }
 
   return (
     <main className="app-shell app-shell--narrow">
       <section className="student-card">
-        <span className="tag">Avaliacao final</span>
-        <h1 className="section-title serif">{assessment?.title || 'Carregando avaliacao...'}</h1>
+        <span className="tag">Avaliação final</span>
+        <h1 className="section-title serif">{assessment?.title || 'Carregando avaliação...'}</h1>
         <p className="section-sub section-sub--left">{assessment?.description}</p>
 
         <div className="student-card__meta student-card__meta--wide">
-          <span>Aprovacao em {assessment?.passingScore ?? '-'}%</span>
-          {assessment?.timeLimitMinutes ? <span>{assessment.timeLimitMinutes} minutos</span> : null}
+          <span>Aproveitamento mínimo: {assessment ? formatPercent(assessment.passingScore) : '-'}</span>
+          {assessment?.timeLimitMinutes ? <span>Tempo estimado: {assessment.timeLimitMinutes} minutos</span> : null}
         </div>
 
         {assessment?.questions.map((question) => (
@@ -100,13 +101,13 @@ export default function AssessmentPage() {
         ))}
 
         <button className="public-button" onClick={() => void handleSubmit()} type="button">
-          Enviar avaliacao
+          Enviar avaliação
         </button>
 
         {result ? (
           <div className="result-box">
             <strong>
-              Nota: {result.score.toFixed(0)}% · {result.passed ? 'Aprovado(a)' : 'Nao aprovado(a)'}
+              Resultado: {formatPercent(result.score)} · {result.passed ? 'Aprovado(a)' : 'Não aprovado(a)'}
             </strong>
             {result.certificate ? (
               <Link className="public-button public-button--ghost" href="/certificados">

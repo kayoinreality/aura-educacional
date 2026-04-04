@@ -1,6 +1,7 @@
 import Link from 'next/link'
 import { CourseTabs } from '../components/course-tabs'
 import { fetchFromApiOrDefault } from '../lib/api'
+import { formatOneDecimal } from '../lib/formatters'
 import {
   fallbackCourseListPayload,
   fallbackPublicOverview,
@@ -61,57 +62,58 @@ type CourseList = {
 const journeySteps = [
   {
     step: '01',
-    title: 'Crie sua conta',
+    title: 'Realize seu cadastro',
     description:
-      'Cadastro simples por e-mail e senha, com opção de login Google assim que a chave estiver configurada.',
+      'Crie sua conta com e-mail e senha para acompanhar matrículas, progresso acadêmico e certificados digitais.',
   },
   {
     step: '02',
     title: 'Escolha o curso',
     description:
-      'Navegue por trilhas, veja carga horária, nível, aulas e diferenciais antes de seguir para o checkout.',
+      'Compare trilhas, carga horária, nível de formação e conteúdos antes de formalizar sua inscrição.',
   },
   {
     step: '03',
-    title: 'Pague com segurança',
+    title: 'Conclua a inscrição',
     description:
-      'Fluxo preparado para cartão, PIX e boleto, com modo mock em desenvolvimento e integração Stripe depois.',
+      'Efetue o pagamento em ambiente seguro e receba acesso imediato à área de estudos assim que a inscrição for confirmada.',
   },
   {
     step: '04',
-    title: 'Estude e conclua',
+    title: 'Estude e obtenha sua certificação',
     description:
-      'Área do aluno com progresso por aula, avaliação final e emissão automática de certificado ao concluir.',
+      'Acompanhe as aulas, realize a avaliação final e emita seu certificado digital ao concluir os requisitos do curso.',
   },
 ]
 
 const benefitPoints = [
   {
-    title: 'Experiência completa do aluno',
+    title: 'Formação completa em um único ambiente',
     description:
-      'A jornada pública agora cobre entrada, compra, estudo, avaliação e certificado sem depender do admin.',
+      'O estudante realiza matrícula, acompanha aulas, presta avaliação e acessa o certificado sem depender de processos externos.',
   },
   {
-    title: 'Cursos livres com argumento comercial',
+    title: 'Proposta acadêmica clara e objetiva',
     description:
-      'A home comunica catálogo, resultado profissional e prova de conclusão de um jeito mais vendável.',
+      'A página inicial apresenta os cursos livres com linguagem institucional, foco em resultado e informações essenciais para a decisão de compra.',
   },
   {
-    title: 'Pronto para evoluir em produção',
+    title: 'Estrutura preparada para expansão',
     description:
-      'O backend já expõe rotas reais para matrícula, progresso, avaliação e certificado, facilitando deploy posterior.',
+      'A plataforma foi organizada para crescer com novas trilhas, métodos de pagamento e evoluções futuras na experiência do aluno.',
   },
 ]
 
 const pricingPlans = [
   {
-    name: 'Curso Avulso',
+    name: 'Curso avulso',
     price: '79',
     period: 'pagamento único',
-    description: 'Ideal para quem quer entrar em uma trilha específica com acesso vitalício.',
+    description:
+      'Indicado para quem deseja ingressar em uma trilha específica, com acesso integral ao conteúdo adquirido.',
     features: [
-      '1 curso completo',
-      'Área de estudos liberada na hora',
+      'Acesso a um curso completo',
+      'Liberação imediata da área de estudos',
       'Avaliação final incluída',
       'Certificado digital verificável',
     ],
@@ -120,25 +122,27 @@ const pricingPlans = [
   {
     name: 'Assinatura Pro',
     price: '39',
-    period: 'por mês',
-    description: 'Acesso recorrente ao catálogo para estudar em ritmo contínuo.',
+    period: 'mensal',
+    description:
+      'Modalidade recomendada para estudantes que desejam acompanhar o catálogo continuamente e ampliar sua formação.',
     features: [
-      'Todos os cursos publicados',
-      'Certificados ilimitados',
-      'Novas trilhas ao longo do tempo',
-      'Ideal para recorrência em produção',
+      'Acesso a todos os cursos publicados',
+      'Certificados sem limite de emissão',
+      'Inclusão de novas trilhas ao longo do período',
+      'Modelo adequado para recorrência',
     ],
     featured: true,
   },
   {
-    name: 'Turma Corporativa',
+    name: 'Turma corporativa',
     price: 'Sob consulta',
-    period: 'plano sob medida',
-    description: 'Formato pensado para times que querem capacitação e acompanhamento centralizado.',
+    period: 'proposta personalizada',
+    description:
+      'Solução voltada a empresas que precisam capacitar equipes com acompanhamento centralizado.',
     features: [
-      'Curadoria de trilhas',
-      'Gestão por equipe',
-      'Relatórios de progresso',
+      'Curadoria de trilhas formativas',
+      'Gestão por grupo ou equipe',
+      'Relatórios de acompanhamento',
       'Suporte de implantação',
     ],
     featured: false,
@@ -147,19 +151,19 @@ const pricingPlans = [
 
 const faqItems = [
   {
-    question: 'Preciso criar conta para comprar um curso?',
+    question: 'É necessário criar conta para adquirir um curso?',
     answer:
-      'Sim. O login garante vínculo da compra com a matrícula, progresso, avaliação e certificado emitido depois.',
+      'Sim. O cadastro permite vincular a compra à matrícula, registrar o progresso do estudante e emitir o certificado ao final da formação.',
   },
   {
-    question: 'O certificado sai automaticamente?',
+    question: 'O certificado é emitido automaticamente?',
     answer:
-      'Sim. Quando o aluno conclui as aulas exigidas, passa na avaliação e o curso possui certificado habilitado, a emissão acontece automaticamente.',
+      'Sim. Após a conclusão das aulas exigidas e a aprovação na avaliação final, o certificado é disponibilizado automaticamente quando o curso oferece essa certificação.',
   },
   {
-    question: 'O login com Google já está pronto?',
+    question: 'Posso acessar a plataforma com minha conta Google?',
     answer:
-      'A infraestrutura está preparada. Para ativar de verdade, eu ainda preciso do seu GOOGLE_CLIENT_ID público e da configuração OAuth correspondente.',
+      'Sim. O acesso por conta Google pode ser habilitado para oferecer uma autenticação mais rápida, mantendo a mesma segurança aplicada ao cadastro tradicional.',
   },
 ]
 
@@ -198,17 +202,17 @@ export default async function HomePage() {
             </div>
 
             <h1 className="serif">
-              Aprenda, pague, estude, faça a avaliação e emita seu certificado no mesmo lugar
+              Formação livre, acesso imediato e certificação digital em uma única experiência
             </h1>
 
             <p className="hero-sub">
-              A Aura Educacional agora está desenhada para o público final: catálogo comercial,
-              checkout, área do aluno, prova final e certificado digital verificável.
+              A Aura Educacional reúne catálogo público, matrícula online, ambiente de estudos,
+              avaliação final e emissão de certificado com linguagem clara e proposta acadêmica objetiva.
             </p>
 
             <div className="hero-actions">
               <Link className="btn btn-primary" href="/cursos">
-                Ver catálogo
+                Consultar cursos
               </Link>
               <Link className="btn btn-outline" href="/cadastro">
                 Criar conta
@@ -219,7 +223,7 @@ export default async function HomePage() {
             </div>
 
             <p className="hero-note mono">
-              frontend/web · backend/api · PostgreSQL · Prisma · Redis · certificados em PDF
+              Matrícula online, acompanhamento individual, avaliação final e certificação digital.
             </p>
 
             <div className="hero-stats">
@@ -232,15 +236,15 @@ export default async function HomePage() {
                 <div className="hero-stat-label">Matrículas registradas</div>
               </div>
               <div>
-                <div className="hero-stat-num">{overview.totals.averageRating.toFixed(1)}</div>
+                <div className="hero-stat-num">{formatOneDecimal(overview.totals.averageRating)}</div>
                 <div className="hero-stat-label">Avaliação média</div>
               </div>
             </div>
 
             {apiUnavailable ? (
               <div className="hero-alert">
-                A estrutura pública já está pronta. Assim que a API estiver online, o catálogo volta a
-                carregar os dados reais automaticamente.
+                Algumas informações desta vitrine estão em modo demonstrativo e serão atualizadas
+                automaticamente quando a integração pública estiver disponível.
               </div>
             ) : null}
           </div>
@@ -255,7 +259,7 @@ export default async function HomePage() {
                     {course.category.name} · {course.totalHours}h · {course.totalLessons} aulas
                   </div>
                 </div>
-                <div className="cert-badge">{course.isFree ? 'livre' : 'acesso imediato'}</div>
+                <div className="cert-badge">{course.isFree ? 'gratuito' : 'acesso imediato'}</div>
               </article>
             ))}
           </div>
@@ -278,10 +282,10 @@ export default async function HomePage() {
       <section className="journey" id="como-funciona">
         <div className="container">
           <div className="section-header">
-            <span className="tag">Jornada do aluno</span>
-            <h2 className="section-title serif">Do primeiro acesso ao certificado</h2>
+            <span className="tag">Jornada do estudante</span>
+            <h2 className="section-title serif">Da inscrição à certificação</h2>
             <p className="section-sub">
-              O site público agora mostra claramente como a plataforma funciona para o aluno final.
+              A plataforma foi estruturada para apresentar, de forma clara, cada etapa da experiência acadêmica.
             </p>
           </div>
 
@@ -300,11 +304,10 @@ export default async function HomePage() {
       <section className="categories">
         <div className="container">
           <div className="section-header">
-            <span className="tag">Categorias</span>
+            <span className="tag">Áreas de formação</span>
             <h2 className="section-title serif">Trilhas organizadas por perfil e objetivo</h2>
             <p className="section-sub">
-              Cada categoria vira uma aba na vitrine para o público comparar caminhos de estudo com mais
-              clareza.
+              Cada categoria foi separada para facilitar a comparação entre os percursos formativos disponíveis.
             </p>
           </div>
 
@@ -324,9 +327,9 @@ export default async function HomePage() {
         <div className="container">
           <div className="section-header">
             <span className="tag">Catálogo</span>
-            <h2 className="section-title serif">Escolha por tipo de curso e siga direto para o checkout</h2>
+            <h2 className="section-title serif">Escolha o curso ideal e prossiga para a matrícula</h2>
             <p className="section-sub">
-              As abas já usam dados reais da API e conduzem a navegação para detalhes, matrícula e compra.
+              As abas por categoria organizam as ofertas e conduzem o visitante para os detalhes, a inscrição e o pagamento.
             </p>
           </div>
 
@@ -351,7 +354,7 @@ export default async function HomePage() {
                     {featuredCourse?.title || 'Prisma para Dashboards e Relatórios'}
                   </div>
                   <div className="cert-preview-hours">
-                    Carga horária média: {overview.totals.averageHours.toFixed(1)} horas
+                    Carga horária média: {formatOneDecimal(overview.totals.averageHours)} horas
                   </div>
                 </div>
                 <div className="cert-preview-footer">
@@ -367,11 +370,11 @@ export default async function HomePage() {
 
             <div>
               <div className="section-copy">
-                <span className="tag">Valor percebido</span>
-                <h2 className="section-title serif">O certificado virou parte central da proposta do produto</h2>
+                <span className="tag">Certificação</span>
+                <h2 className="section-title serif">O certificado integra a proposta pedagógica do curso</h2>
                 <p className="section-sub section-sub--left">
-                  Além de vender o curso, a home agora vende o resultado final: uma experiência completa
-                  de formação com prova e documento verificável.
+                  Mais do que apresentar um curso, a página evidencia o resultado final da formação:
+                  aprendizagem validada por avaliação e documento digital verificável.
                 </p>
               </div>
 
@@ -394,17 +397,17 @@ export default async function HomePage() {
       <section className="pricing" id="planos">
         <div className="container">
           <div className="section-header">
-            <span className="tag">Oferta</span>
-            <h2 className="section-title serif">Formatos comerciais para vender a plataforma</h2>
+            <span className="tag">Modalidades</span>
+            <h2 className="section-title serif">Formatos comerciais disponíveis para a oferta dos cursos</h2>
             <p className="section-sub">
-              A experiência pública já comporta desde curso avulso até assinatura e expansão futura.
+              A experiência pública contempla inscrição individual, recorrência e expansão para turmas corporativas.
             </p>
           </div>
 
           <div className="pricing-grid">
             {pricingPlans.map((plan) => (
               <article key={plan.name} className={`pricing-card ${plan.featured ? 'featured' : ''}`}>
-                {plan.featured ? <div className="pricing-badge">Mais popular</div> : null}
+                {plan.featured ? <div className="pricing-badge">Mais procurado</div> : null}
                 <div className="pricing-plan">{plan.name}</div>
                 <div className="pricing-price">
                   {plan.price === 'Sob consulta' ? (
@@ -428,7 +431,7 @@ export default async function HomePage() {
                   ))}
                 </ul>
                 <Link className={`btn ${plan.featured ? 'btn-primary' : 'btn-outline'}`} href="/cursos">
-                  Explorar cursos
+                  Consultar cursos
                 </Link>
               </article>
             ))}
@@ -439,8 +442,8 @@ export default async function HomePage() {
       <section className="faq" id="faq">
         <div className="container">
           <div className="section-header">
-            <span className="tag">FAQ</span>
-            <h2 className="section-title serif">Dúvidas comuns antes da matrícula</h2>
+            <span className="tag">Perguntas frequentes</span>
+            <h2 className="section-title serif">Informações essenciais antes da matrícula</h2>
           </div>
 
           <div className="faq-list">
@@ -459,15 +462,14 @@ export default async function HomePage() {
       <section className="cta">
         <div className="container">
           <div className="cta-box">
-            <div className="tag">Pronto para uso</div>
-            <h2 className="cta-title serif">A base pública da plataforma já cobre a jornada completa do aluno</h2>
+            <div className="tag">Pronto para estudar</div>
+            <h2 className="cta-title serif">Toda a jornada do aluno está reunida em uma única plataforma</h2>
             <p className="cta-sub">
-              Cadastre-se, escolha um curso, conclua a jornada e acompanhe seus certificados em uma mesma
-              experiência.
+              Cadastre-se, selecione seu curso, acompanhe o conteúdo e conclua sua formação com certificação digital.
             </p>
             <div className="hero-actions">
               <Link className="btn btn-primary" href="/cadastro">
-                Começar agora
+                Iniciar agora
               </Link>
               <Link className="btn btn-outline" href="/cursos">
                 Ver cursos

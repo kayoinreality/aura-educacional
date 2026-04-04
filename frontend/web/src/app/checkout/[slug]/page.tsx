@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react'
 import { useParams, useRouter } from 'next/navigation'
 import { fetchFromApi } from '../../../lib/api'
 import { authFetch } from '../../../lib/auth-client'
+import { formatCurrency } from '../../../lib/formatters'
 import { getFallbackCheckoutSummary } from '../../../lib/public-fallback'
 
 export const runtime = 'edge'
@@ -49,13 +50,11 @@ export default function CheckoutPage() {
         const payload = await fetchFromApi<CheckoutSummary>(`/checkout/summary/${params.slug}${query}`)
         setSummary(payload)
         setUsingFallback(false)
-      } catch (caughtError) {
+      } catch {
         setSummary(getFallbackCheckoutSummary(params.slug))
         setUsingFallback(true)
         setError(
-          caughtError instanceof Error
-            ? 'Checkout em modo demonstracao ate a API entrar em producao.'
-            : 'Checkout em modo demonstracao ate a API entrar em producao.'
+          'Neste ambiente demonstrativo, a etapa de pagamento será liberada integralmente quando a API pública estiver disponível.'
         )
       }
     }
@@ -65,7 +64,7 @@ export default function CheckoutPage() {
 
   async function handlePurchase() {
     if (usingFallback) {
-      setError('O pagamento sera liberado quando a API publica estiver online.')
+      setError('A confirmação do pagamento será disponibilizada quando a integração pública estiver ativa.')
       return
     }
 
@@ -89,7 +88,7 @@ export default function CheckoutPage() {
 
       router.push('/meus-cursos')
     } catch (caughtError) {
-      setError(caughtError instanceof Error ? caughtError.message : 'Falha ao concluir compra.')
+      setError(caughtError instanceof Error ? caughtError.message : 'Não foi possível concluir a inscrição.')
     } finally {
       setLoading(false)
     }
@@ -98,21 +97,21 @@ export default function CheckoutPage() {
   return (
     <main className="app-shell app-shell--narrow">
       <section className="checkout-card checkout-card--full">
-        <span className="tag">Checkout</span>
+        <span className="tag">Inscrição</span>
         <h1 className="section-title serif">{summary?.course.title || 'Carregando curso...'}</h1>
         <p className="section-sub section-sub--left">{summary?.course.shortDescription}</p>
 
         <div className="checkout-grid">
           <label>
-            Cupom
+            Cupom de desconto
             <input value={coupon} onChange={(event) => setCoupon(event.target.value.toUpperCase())} />
           </label>
           <label>
             Forma de pagamento
             <select value={paymentMethod} onChange={(event) => setPaymentMethod(event.target.value as any)}>
-              <option value="CREDIT_CARD">Cartao de credito</option>
-              <option value="PIX">PIX</option>
-              <option value="BOLETO">Boleto</option>
+              <option value="CREDIT_CARD">Cartão de crédito</option>
+              <option value="PIX">Pix</option>
+              <option value="BOLETO">Boleto bancário</option>
             </select>
           </label>
         </div>
@@ -120,22 +119,22 @@ export default function CheckoutPage() {
         {summary ? (
           <div className="summary-box">
             <div>
-              <span>Valor base</span>
-              <strong>R$ {summary.pricing.basePrice.toFixed(2)}</strong>
+              <span>Valor de referência</span>
+              <strong>{formatCurrency(summary.pricing.basePrice)}</strong>
             </div>
             <div>
               <span>Desconto</span>
-              <strong>R$ {summary.pricing.discountAmount.toFixed(2)}</strong>
+              <strong>{formatCurrency(summary.pricing.discountAmount)}</strong>
             </div>
             <div>
-              <span>Total</span>
-              <strong>R$ {summary.pricing.finalPrice.toFixed(2)}</strong>
+              <span>Valor final</span>
+              <strong>{formatCurrency(summary.pricing.finalPrice)}</strong>
             </div>
           </div>
         ) : null}
 
         <button className="public-button" disabled={loading} onClick={() => void handlePurchase()} type="button">
-          {loading ? 'Processando...' : 'Finalizar compra'}
+          {loading ? 'Processando pagamento...' : 'Concluir inscrição'}
         </button>
 
         {error ? <p className="auth-error">{error}</p> : null}

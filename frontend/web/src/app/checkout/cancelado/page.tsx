@@ -4,11 +4,10 @@ export default function CheckoutCancelledPage() {
   return (
     <main className="app-shell app-shell--narrow">
       <section className="student-card">
-        <span className="tag">Checkout</span>
-        <h1 className="section-title serif">Pagamento cancelado</h1>
+        <span className="tag">Pagamento</span>
+        <h1 className="section-title serif">Pagamento não concluído</h1>
         <p className="section-sub section-sub--left">
-          Nenhuma cobrança foi concluída. Você pode voltar ao catálogo, revisar o curso e tentar
-          novamente quando quiser.
+          Nenhuma cobrança foi efetivada. Você pode retornar ao catálogo, revisar as informações do curso e tentar novamente quando desejar.
         </p>
 
         <div className="student-card__actions">
@@ -16,7 +15,7 @@ export default function CheckoutCancelledPage() {
             Voltar ao catálogo
           </Link>
           <Link className="public-button public-button--ghost" href="/login">
-            Entrar na plataforma
+            Acessar a plataforma
           </Link>
         </div>
       </section>

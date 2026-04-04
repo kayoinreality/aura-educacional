@@ -26,7 +26,7 @@ export default function CertificatesPage() {
     authFetch<Certificate[]>('/certificates/mine')
       .then(setCertificates)
       .catch((caughtError) =>
-        setError(caughtError instanceof Error ? caughtError.message : 'Falha ao carregar certificados.')
+        setError(caughtError instanceof Error ? caughtError.message : 'Não foi possível carregar os certificados.')
       )
   }, [])
 
@@ -34,9 +34,9 @@ export default function CertificatesPage() {
     <main className="app-shell">
       <section className="page-intro">
         <span className="tag">Certificados</span>
-        <h1 className="section-title serif">Seus certificados emitidos</h1>
+        <h1 className="section-title serif">Certificados emitidos</h1>
         <p className="section-sub section-sub--left">
-          Cada certificado pode ser visualizado em PDF e validado pelo codigo publico.
+          Cada certificado pode ser consultado em PDF e validado por código público de verificação.
         </p>
       </section>
 
@@ -48,7 +48,7 @@ export default function CertificatesPage() {
             <span className="student-card__eyebrow">{certificate.code}</span>
             <h2>{certificate.course.title}</h2>
             <p>
-              Carga horaria: {certificate.course.certificateHours ?? certificate.course.totalHours} horas
+              Carga horária certificada: {certificate.course.certificateHours ?? certificate.course.totalHours} horas
             </p>
 
             <div className="student-card__actions">
@@ -56,7 +56,7 @@ export default function CertificatesPage() {
                 Abrir PDF
               </a>
               <a className="public-button public-button--ghost" href={`${API_URL}/certificates/verify/${certificate.code}`} rel="noreferrer" target="_blank">
-                Verificar
+                Validar certificado
               </a>
             </div>
           </article>

@@ -4,6 +4,7 @@ import Link from 'next/link'
 import { useEffect, useState } from 'react'
 import { useParams } from 'next/navigation'
 import { authFetch } from '../../../lib/auth-client'
+import { formatEnrollmentStatus, formatPercent } from '../../../lib/formatters'
 
 export const runtime = 'edge'
 
@@ -53,7 +54,7 @@ export default function StudyPage() {
       const result = await authFetch<StudyPayload>(`/learning/courses/${params.slug}`)
       setPayload(result)
     } catch (caughtError) {
-      setError(caughtError instanceof Error ? caughtError.message : 'Falha ao carregar o curso.')
+      setError(caughtError instanceof Error ? caughtError.message : 'Não foi possível carregar o curso.')
     }
   }
 
@@ -75,7 +76,7 @@ export default function StudyPage() {
   return (
     <main className="app-shell">
       <section className="page-intro">
-        <span className="tag">Area de estudos</span>
+        <span className="tag">Área de estudos</span>
         <h1 className="section-title serif">{payload?.course.title || 'Carregando curso...'}</h1>
         <p className="section-sub section-sub--left">{payload?.course.shortDescription}</p>
       </section>
@@ -85,21 +86,21 @@ export default function StudyPage() {
       {payload ? (
         <>
           <section className="student-card">
-            <h2>Progresso do curso</h2>
+            <h2>Progresso acadêmico</h2>
             <div className="progress-bar">
               <div style={{ width: `${payload.enrollment.progress}%` }} />
             </div>
             <div className="student-card__meta student-card__meta--wide">
-              <span>{payload.enrollment.progress.toFixed(0)}% concluido</span>
-              <span>{payload.enrollment.status}</span>
+              <span>{formatPercent(payload.enrollment.progress)} concluído</span>
+              <span>{formatEnrollmentStatus(payload.enrollment.status)}</span>
               {payload.certificate ? <span>Certificado emitido</span> : null}
             </div>
             <div className="student-card__actions">
               <Link className="public-button" href={`/estudos/${params.slug}/avaliacao`}>
-                Fazer avaliacao final
+                Realizar avaliação final
               </Link>
               <Link className="public-button public-button--ghost" href="/certificados">
-                Ver certificados
+                Consultar certificados
               </Link>
             </div>
           </section>
@@ -114,13 +115,17 @@ export default function StudyPage() {
                   <div key={lesson.id} className="lesson-row">
                     <div>
                       <strong>{lesson.title}</strong>
-                      <p>{lesson.description || lesson.content || 'Conteudo da aula.'}</p>
+                      <p>{lesson.description || lesson.content || 'Conteúdo da aula.'}</p>
                     </div>
 
                     <div className="lesson-row__actions">
-                      <span>{lesson.progress.completed ? 'Concluida' : 'Pendente'}</span>
-                      <button className="public-button public-button--ghost" onClick={() => void completeLesson(lesson.id)} type="button">
-                        Marcar como concluida
+                      <span>{lesson.progress.completed ? 'Concluída' : 'Pendente'}</span>
+                      <button
+                        className="public-button public-button--ghost"
+                        onClick={() => void completeLesson(lesson.id)}
+                        type="button"
+                      >
+                        Marcar como concluída
                       </button>
                     </div>
                   </div>

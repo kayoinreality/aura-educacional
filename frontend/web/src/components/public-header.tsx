@@ -24,7 +24,7 @@ export function PublicHeader() {
 
         <nav className="public-header__nav">
           <Link href="/cursos">Cursos</Link>
-          <Link href="/meus-cursos">Meus cursos</Link>
+          <Link href="/meus-cursos">Área do aluno</Link>
           <Link href="/certificados">Certificados</Link>
         </nav>
 

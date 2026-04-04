@@ -19,7 +19,7 @@ const STORAGE_KEY = 'aura_public_session'
 
 function ensureBrowser() {
   if (typeof window === 'undefined') {
-    throw new Error('Browser session is not available on the server.')
+    throw new Error('A sessão do navegador não está disponível no servidor.')
   }
 }
 
@@ -61,7 +61,7 @@ async function parseJson<T>(response: Response): Promise<T> {
   const payload = await response.json().catch(() => null)
 
   if (!response.ok) {
-    throw new Error(payload?.error || 'Request failed.')
+    throw new Error(payload?.error || 'Não foi possível concluir a solicitação.')
   }
 
   return payload as T
@@ -166,7 +166,7 @@ export async function authFetch<T>(path: string, init?: RequestInit): Promise<T>
   const session = readSession()
 
   if (!session) {
-    throw new Error('Voce precisa entrar para continuar.')
+    throw new Error('É necessário entrar na plataforma para continuar.')
   }
 
   const makeRequest = async (token: string) =>

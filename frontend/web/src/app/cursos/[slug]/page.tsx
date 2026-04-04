@@ -1,5 +1,6 @@
 import Link from 'next/link'
 import { fetchFromApiOrDefault } from '../../../lib/api'
+import { formatCourseLevel, formatCurrency } from '../../../lib/formatters'
 import { getFallbackCourseDetail } from '../../../lib/public-fallback'
 
 export const runtime = 'edge'
@@ -75,34 +76,34 @@ export default async function CourseDetailPage({
           <p className="section-sub section-sub--left">{course.shortDescription}</p>
 
           <div className="student-card__meta student-card__meta--wide">
-            <span>{course.level}</span>
+            <span>{formatCourseLevel(course.level)}</span>
             <span>{course.language}</span>
             <span>{course.totalLessons} aulas</span>
             <span>{course.totalHours}h</span>
-            {course.hasCertificate ? <span>Certificado incluso</span> : null}
+            {course.hasCertificate ? <span>Certificado incluído</span> : null}
           </div>
 
           <div className="course-hero__actions">
             <Link className="public-button" href={`/checkout/${course.slug}`}>
-              Ir para checkout
+              Prosseguir para a inscrição
             </Link>
             <Link className="public-button public-button--ghost" href="/cursos">
-              Voltar ao catalogo
+              Voltar ao catálogo
             </Link>
           </div>
         </div>
 
         <aside className="checkout-card">
           <span className="checkout-card__eyebrow">Investimento</span>
-          {course.originalPrice ? <small>R$ {course.originalPrice.toFixed(2)}</small> : null}
-          <strong>{course.isFree ? 'Gratis' : `R$ ${course.price.toFixed(2)}`}</strong>
+          {course.originalPrice ? <small>{formatCurrency(course.originalPrice)}</small> : null}
+          <strong>{course.isFree ? 'Gratuito' : formatCurrency(course.price)}</strong>
           <p>{course.description}</p>
         </aside>
       </section>
 
       <section className="details-grid">
         <article className="student-card">
-          <h2>Voce vai aprender</h2>
+          <h2>O que você aprenderá</h2>
           <ul className="bullet-list">
             {course.outcomes.map((item) => (
               <li key={item.id}>{item.description}</li>
@@ -111,7 +112,7 @@ export default async function CourseDetailPage({
         </article>
 
         <article className="student-card">
-          <h2>Pre-requisitos</h2>
+          <h2>Requisitos recomendados</h2>
           <ul className="bullet-list">
             {course.requirements.map((item) => (
               <li key={item.id}>{item.description}</li>
@@ -121,7 +122,7 @@ export default async function CourseDetailPage({
       </section>
 
       <section className="student-card">
-        <h2>Conteudo do curso</h2>
+        <h2>Conteúdo programático</h2>
         <div className="module-listing">
           {course.modules.map((module) => (
             <article key={module.id} className="module-card">
@@ -131,7 +132,7 @@ export default async function CourseDetailPage({
                 {module.lessons.map((lesson) => (
                   <li key={lesson.id}>
                     {lesson.title}
-                    {lesson.isPreview ? ' · aula aberta' : ''}
+                    {lesson.isPreview ? ' · aula de demonstração' : ''}
                   </li>
                 ))}
               </ul>

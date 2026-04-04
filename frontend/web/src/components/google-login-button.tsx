@@ -63,7 +63,7 @@ export function GoogleLoginButton({
   if (!clientId) {
     return (
       <div className="google-placeholder">
-        Login com Google sera exibido aqui assim que voce me enviar o `GOOGLE_CLIENT_ID`.
+        O acesso com Google será exibido aqui assim que a credencial pública da aplicação estiver configurada.
       </div>
     )
   }

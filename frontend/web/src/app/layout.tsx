@@ -21,7 +21,8 @@ const mono = DM_Mono({
 
 export const metadata: Metadata = {
   title: 'Aura Educacional',
-  description: 'Plataforma de cursos livres com login, checkout, area de estudos, avaliacao final e certificado digital.',
+  description:
+    'Plataforma de cursos livres com catálogo público, acesso do aluno, avaliação final e certificado digital.',
 }
 
 export default function RootLayout({

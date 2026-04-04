@@ -1,5 +1,6 @@
 import Link from 'next/link'
 import { fetchFromApiOrDefault } from '../../lib/api'
+import { formatCourseLevel, formatCurrency } from '../../lib/formatters'
 import { fallbackCourseListPayload } from '../../lib/public-fallback'
 
 export const runtime = 'edge'
@@ -37,11 +38,10 @@ export default async function CoursesPage() {
   return (
     <main className="app-shell">
       <section className="page-intro">
-        <span className="tag">Catalogo</span>
-        <h1 className="section-title serif">Escolha um curso e comece a estudar hoje</h1>
+        <span className="tag">Catálogo</span>
+        <h1 className="section-title serif">Selecione um curso e inicie seus estudos</h1>
         <p className="section-sub section-sub--left">
-          Explore o catalogo publico da plataforma, compare trilhas e siga para checkout quando encontrar
-          o curso ideal.
+          Consulte as trilhas disponíveis, compare carga horária, nível e proposta de formação antes de realizar sua inscrição.
         </p>
       </section>
 
@@ -53,21 +53,21 @@ export default async function CoursesPage() {
             <p>{course.shortDescription}</p>
 
             <div className="student-card__meta">
-              <span>{course.level}</span>
+              <span>{formatCourseLevel(course.level)}</span>
               <span>{course.totalLessons} aulas</span>
               <span>{course.totalHours}h</span>
             </div>
 
             <div className="student-card__footer">
               <div>
-                <small>Instrutor(a)</small>
+                <small>Instrutoria</small>
                 <strong>
                   {course.instructor.user.firstName} {course.instructor.user.lastName}
                 </strong>
               </div>
               <div className="student-card__price">
-                {course.originalPrice ? <small>R$ {course.originalPrice.toFixed(2)}</small> : null}
-                <strong>{course.isFree ? 'Gratis' : `R$ ${course.price.toFixed(2)}`}</strong>
+                {course.originalPrice ? <small>{formatCurrency(course.originalPrice)}</small> : null}
+                <strong>{course.isFree ? 'Gratuito' : formatCurrency(course.price)}</strong>
               </div>
             </div>
 
@@ -76,7 +76,7 @@ export default async function CoursesPage() {
                 Ver detalhes
               </Link>
               <Link className="public-button" href={`/checkout/${course.slug}`}>
-                Comprar
+                Prosseguir para a compra
               </Link>
             </div>
           </article>

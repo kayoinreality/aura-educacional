@@ -3,6 +3,7 @@
 import Link from 'next/link'
 import { useEffect, useState } from 'react'
 import { authFetch } from '../../lib/auth-client'
+import { formatEnrollmentStatus, formatPercent } from '../../lib/formatters'
 
 type Enrollment = {
   id: string
@@ -33,17 +34,17 @@ export default function MyCoursesPage() {
     authFetch<Enrollment[]>('/learning/courses')
       .then(setCourses)
       .catch((caughtError) =>
-        setError(caughtError instanceof Error ? caughtError.message : 'Falha ao carregar seus cursos.')
+        setError(caughtError instanceof Error ? caughtError.message : 'Não foi possível carregar seus cursos.')
       )
   }, [])
 
   return (
     <main className="app-shell">
       <section className="page-intro">
-        <span className="tag">Area do aluno</span>
-        <h1 className="section-title serif">Meus cursos</h1>
+        <span className="tag">Área do aluno</span>
+        <h1 className="section-title serif">Cursos matriculados</h1>
         <p className="section-sub section-sub--left">
-          Acompanhe progresso, entre na area de estudos e avance para a avaliacao final.
+          Acompanhe seu progresso, acesse o ambiente de estudos e avance para a avaliação final.
         </p>
       </section>
 
@@ -61,9 +62,9 @@ export default function MyCoursesPage() {
             </div>
 
             <div className="student-card__meta">
-              <span>{enrollment.progress.toFixed(0)}%</span>
-              <span>{enrollment.status}</span>
-              {enrollment.certificate ? <span>Certificado pronto</span> : null}
+              <span>{formatPercent(enrollment.progress)}</span>
+              <span>{formatEnrollmentStatus(enrollment.status)}</span>
+              {enrollment.certificate ? <span>Certificado disponível</span> : null}
             </div>
 
             <div className="student-card__actions">
@@ -71,7 +72,7 @@ export default function MyCoursesPage() {
                 Continuar estudos
               </Link>
               <Link className="public-button public-button--ghost" href={`/estudos/${enrollment.course.slug}/avaliacao`}>
-                Ir para avaliacao
+                Ir para a avaliação
               </Link>
             </div>
           </article>

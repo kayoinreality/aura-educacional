@@ -27,7 +27,7 @@ export default function RegisterPage() {
       setMessage(result.message)
       router.push('/login')
     } catch (caughtError) {
-      setError(caughtError instanceof Error ? caughtError.message : 'Falha ao criar conta.')
+      setError(caughtError instanceof Error ? caughtError.message : 'Não foi possível concluir o cadastro.')
     } finally {
       setLoading(false)
     }
@@ -37,9 +37,9 @@ export default function RegisterPage() {
     <main className="app-shell app-shell--narrow">
       <section className="auth-card">
         <span className="tag">Cadastro</span>
-        <h1 className="section-title serif">Crie sua conta e comece a estudar</h1>
+        <h1 className="section-title serif">Crie sua conta e inicie sua jornada de aprendizagem</h1>
         <p className="section-sub section-sub--left">
-          Em ambiente local com envio em modo `log`, a conta ja sai validada para acelerar o fluxo.
+          Preencha seus dados para acessar os cursos, acompanhar o progresso e emitir seus certificados digitais.
         </p>
 
         <form className="auth-form" onSubmit={handleSubmit}>
@@ -74,7 +74,7 @@ export default function RegisterPage() {
             />
           </label>
           <button className="public-button" disabled={loading} type="submit">
-            {loading ? 'Criando conta...' : 'Criar conta'}
+            {loading ? 'Criando cadastro...' : 'Criar conta'}
           </button>
         </form>
 

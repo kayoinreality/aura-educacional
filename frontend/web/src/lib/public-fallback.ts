@@ -17,7 +17,7 @@ export const fallbackPublicOverview = {
     },
     {
       id: 'cat-ai',
-      name: 'Inteligencia Artificial',
+      name: 'Inteligência Artificial',
       slug: 'inteligencia-artificial',
       color: '#7c3aed',
       emoji: 'I',
@@ -25,7 +25,7 @@ export const fallbackPublicOverview = {
     },
     {
       id: 'cat-biz',
-      name: 'Gestao e Negocios',
+      name: 'Gestão e Negócios',
       slug: 'gestao-negocios',
       color: '#c9a84c',
       emoji: 'G',
@@ -38,8 +38,9 @@ export const fallbackCourses = [
   {
     id: 'course-prisma',
     slug: 'prisma-dashboards-relatorios',
-    title: 'Prisma para Dashboards e Relatorios',
-    shortDescription: 'Aprenda a modelar dados, consultar com eficiencia e montar bases prontas para analytics.',
+    title: 'Prisma para Dashboards e Relatórios',
+    shortDescription:
+      'Aprenda a modelar dados, consultar com eficiência e estruturar bases preparadas para análise e tomada de decisão.',
     level: 'INTERMEDIATE',
     language: 'PT-BR',
     price: 149,
@@ -69,8 +70,9 @@ export const fallbackCourses = [
   {
     id: 'course-ai',
     slug: 'ia-aplicada-produtividade',
-    title: 'IA Aplicada a Produtividade',
-    shortDescription: 'Use IA no trabalho real para pesquisa, escrita, automacao e organizacao de processos.',
+    title: 'IA Aplicada à Produtividade',
+    shortDescription:
+      'Utilize inteligência artificial no trabalho real para pesquisa, escrita, automação e organização de processos.',
     level: 'BEGINNER',
     language: 'PT-BR',
     price: 97,
@@ -83,13 +85,13 @@ export const fallbackCourses = [
     totalReviews: 19,
     category: {
       id: 'cat-ai',
-      name: 'Inteligencia Artificial',
+      name: 'Inteligência Artificial',
       slug: 'inteligencia-artificial',
       color: '#7c3aed',
     },
     instructor: {
       id: 'inst-2',
-      headline: 'Especialista em automacao e IA aplicada',
+      headline: 'Especialista em automação e IA aplicada',
       user: {
         firstName: 'Kayo',
         lastName: 'Rodrigo',
@@ -100,8 +102,9 @@ export const fallbackCourses = [
   {
     id: 'course-biz',
     slug: 'gestao-agil-para-equipes',
-    title: 'Gestao Agil para Equipes',
-    shortDescription: 'Organize times, projetos e entregas com praticas ageis aplicadas a negocios reais.',
+    title: 'Gestão Ágil para Equipes',
+    shortDescription:
+      'Organize equipes, projetos e entregas com práticas ágeis aplicadas a contextos profissionais reais.',
     level: 'BEGINNER',
     language: 'PT-BR',
     price: 129,
@@ -114,13 +117,13 @@ export const fallbackCourses = [
     totalReviews: 14,
     category: {
       id: 'cat-biz',
-      name: 'Gestao e Negocios',
+      name: 'Gestão e Negócios',
       slug: 'gestao-negocios',
       color: '#c9a84c',
     },
     instructor: {
       id: 'inst-3',
-      headline: 'Consultora de operacoes e estrategia',
+      headline: 'Consultora de operações e estratégia',
       user: {
         firstName: 'Ana',
         lastName: 'Souza',
@@ -136,7 +139,7 @@ export const fallbackCourseListPayload = {
 
 const baseDetail = {
   description:
-    'Curso livre com foco pratico, estrutura guiada e suporte a uma jornada de aprendizagem clara para o aluno final.',
+    'Curso livre com abordagem prática, estrutura guiada e trilha de aprendizagem organizada para o estudante.',
   hasCertificate: true,
   certificateHours: 20,
   tags: ['certificado', 'curso livre', 'aulas gravadas'],
@@ -145,9 +148,9 @@ const baseDetail = {
 export const fallbackCourseDetails: Record<string, any> = {
   'prisma-dashboards-relatorios': {
     slug: 'prisma-dashboards-relatorios',
-    title: 'Prisma para Dashboards e Relatorios',
+    title: 'Prisma para Dashboards e Relatórios',
     shortDescription:
-      'Aprenda a modelar dados, consultar com eficiencia e montar bases prontas para analytics.',
+      'Aprenda a modelar dados, consultar com eficiência e estruturar bases preparadas para análise e tomada de decisão.',
     level: 'INTERMEDIATE',
     language: 'PT-BR',
     price: 149,
@@ -157,7 +160,7 @@ export const fallbackCourseDetails: Record<string, any> = {
     totalHours: 14,
     category: {
       name: 'Tecnologia e Dados',
-      description: 'Formacao pratica em software, dados e produto digital.',
+      description: 'Formação prática em software, dados e produto digital.',
     },
     instructor: {
       headline: 'Engenheira de software e dados',
@@ -166,35 +169,38 @@ export const fallbackCourseDetails: Record<string, any> = {
       user: {
         firstName: 'Marina',
         lastName: 'Lopes',
-        bio: 'Atua com modelagem de dados, backend e produtos baseados em analytics.',
+        bio: 'Atua com modelagem de dados, backend e produtos orientados por indicadores e análise.',
       },
     },
     requirements: [
-      { id: 'req-1', description: 'Conhecimento basico de JavaScript ou TypeScript.' },
-      { id: 'req-2', description: 'Noes basicas de banco relacional ajudam, mas nao sao obrigatorias.' },
+      { id: 'req-1', description: 'Conhecimento básico de JavaScript ou TypeScript.' },
+      {
+        id: 'req-2',
+        description: 'Noções básicas de banco de dados relacional são recomendáveis, mas não obrigatórias.',
+      },
     ],
     outcomes: [
       { id: 'out-1', description: 'Modelar entidades e relacionamentos com Prisma.' },
-      { id: 'out-2', description: 'Preparar consultas para dashboard e relatorios.' },
-      { id: 'out-3', description: 'Estruturar dados para crescimento do produto.' },
+      { id: 'out-2', description: 'Preparar consultas para dashboards e relatórios.' },
+      { id: 'out-3', description: 'Estruturar dados para a evolução sustentável do produto.' },
     ],
     modules: [
       {
         id: 'mod-1',
-        title: 'Fundamentos do schema',
-        description: 'Base conceitual para desenhar um schema consistente.',
+        title: 'Fundamentos do esquema',
+        description: 'Base conceitual para construir um esquema consistente.',
         lessons: [
-          { id: 'les-1', title: 'Models e relacionamentos', description: null, videoDuration: 18, isPreview: true },
-          { id: 'les-2', title: 'Enums e campos calculados', description: null, videoDuration: 16, isPreview: false },
+          { id: 'les-1', title: 'Modelos e relacionamentos', description: null, videoDuration: 18, isPreview: true },
+          { id: 'les-2', title: 'Enumeradores e campos calculados', description: null, videoDuration: 16, isPreview: false },
         ],
       },
       {
         id: 'mod-2',
-        title: 'Consultas para analytics',
-        description: 'Como transformar dados transacionais em visoes gerenciais.',
+        title: 'Consultas para análise',
+        description: 'Como transformar dados transacionais em visões gerenciais.',
         lessons: [
-          { id: 'les-3', title: 'Aggregations e groupBy', description: null, videoDuration: 22, isPreview: false },
-          { id: 'les-4', title: 'Series temporais e filtros', description: null, videoDuration: 19, isPreview: false },
+          { id: 'les-3', title: 'Agregações e groupBy', description: null, videoDuration: 22, isPreview: false },
+          { id: 'les-4', title: 'Séries temporais e filtros', description: null, videoDuration: 19, isPreview: false },
         ],
       },
     ],
@@ -202,8 +208,9 @@ export const fallbackCourseDetails: Record<string, any> = {
   },
   'ia-aplicada-produtividade': {
     slug: 'ia-aplicada-produtividade',
-    title: 'IA Aplicada a Produtividade',
-    shortDescription: 'Use IA no trabalho real para pesquisa, escrita, automacao e organizacao de processos.',
+    title: 'IA Aplicada à Produtividade',
+    shortDescription:
+      'Utilize inteligência artificial no trabalho real para pesquisa, escrita, automação e organização de processos.',
     level: 'BEGINNER',
     language: 'PT-BR',
     price: 97,
@@ -212,45 +219,45 @@ export const fallbackCourseDetails: Record<string, any> = {
     totalLessons: 12,
     totalHours: 10,
     category: {
-      name: 'Inteligencia Artificial',
-      description: 'Cursos para uso pratico de IA em rotina profissional.',
+      name: 'Inteligência Artificial',
+      description: 'Cursos voltados ao uso prático de IA na rotina profissional.',
     },
     instructor: {
-      headline: 'Especialista em automacao e IA aplicada',
-      expertise: ['IA generativa', 'prompts', 'automacao'],
+      headline: 'Especialista em automação e IA aplicada',
+      expertise: ['IA generativa', 'prompts', 'automação'],
       verified: true,
       user: {
         firstName: 'Kayo',
         lastName: 'Rodrigo',
-        bio: 'Ajuda equipes a adotar IA de forma pragmatica no dia a dia.',
+        bio: 'Atua na implementação de IA de forma pragmática, com foco em produtividade e qualidade.',
       },
     },
     requirements: [
-      { id: 'req-1', description: 'Nao exige experiencia previa com IA.' },
-      { id: 'req-2', description: 'Basta familiaridade com rotinas de escritorio e internet.' },
+      { id: 'req-1', description: 'Não exige experiência prévia com inteligência artificial.' },
+      { id: 'req-2', description: 'Basta familiaridade com rotinas administrativas e uso da internet.' },
     ],
     outcomes: [
-      { id: 'out-1', description: 'Criar prompts melhores para tarefas reais.' },
+      { id: 'out-1', description: 'Construir prompts mais claros para tarefas reais.' },
       { id: 'out-2', description: 'Organizar processos com apoio de IA.' },
-      { id: 'out-3', description: 'Ganhar velocidade sem perder criterio.' },
+      { id: 'out-3', description: 'Ganhar produtividade sem comprometer o critério técnico.' },
     ],
     modules: [
       {
         id: 'mod-1',
         title: 'Bases de uso profissional',
-        description: 'Como usar IA com contexto, objetivo e qualidade.',
+        description: 'Como utilizar IA com contexto, objetivo e qualidade.',
         lessons: [
           { id: 'les-1', title: 'Prompts com clareza', description: null, videoDuration: 14, isPreview: true },
-          { id: 'les-2', title: 'Fluxos e revisao humana', description: null, videoDuration: 17, isPreview: false },
+          { id: 'les-2', title: 'Fluxos e revisão humana', description: null, videoDuration: 17, isPreview: false },
         ],
       },
       {
         id: 'mod-2',
-        title: 'Aplicacoes no trabalho',
-        description: 'Casos de uso em pesquisa, comunicacao e operacoes.',
+        title: 'Aplicações no trabalho',
+        description: 'Casos de uso em pesquisa, comunicação e operações.',
         lessons: [
           { id: 'les-3', title: 'Pesquisa assistida', description: null, videoDuration: 18, isPreview: false },
-          { id: 'les-4', title: 'Documentacao e sintese', description: null, videoDuration: 16, isPreview: false },
+          { id: 'les-4', title: 'Documentação e síntese', description: null, videoDuration: 16, isPreview: false },
         ],
       },
     ],
@@ -258,8 +265,9 @@ export const fallbackCourseDetails: Record<string, any> = {
   },
   'gestao-agil-para-equipes': {
     slug: 'gestao-agil-para-equipes',
-    title: 'Gestao Agil para Equipes',
-    shortDescription: 'Organize times, projetos e entregas com praticas ageis aplicadas a negocios reais.',
+    title: 'Gestão Ágil para Equipes',
+    shortDescription:
+      'Organize equipes, projetos e entregas com práticas ágeis aplicadas a contextos profissionais reais.',
     level: 'BEGINNER',
     language: 'PT-BR',
     price: 129,
@@ -268,42 +276,42 @@ export const fallbackCourseDetails: Record<string, any> = {
     totalLessons: 14,
     totalHours: 12,
     category: {
-      name: 'Gestao e Negocios',
-      description: 'Cursos voltados a lideranca, organizacao e crescimento.',
+      name: 'Gestão e Negócios',
+      description: 'Cursos voltados à liderança, à organização e ao crescimento profissional.',
     },
     instructor: {
-      headline: 'Consultora de operacoes e estrategia',
-      expertise: ['Agilidade', 'operacoes', 'times'],
+      headline: 'Consultora de operações e estratégia',
+      expertise: ['Agilidade', 'operações', 'equipes'],
       verified: true,
       user: {
         firstName: 'Ana',
         lastName: 'Souza',
-        bio: 'Trabalha com melhoria de processo e lideranca de equipes.',
+        bio: 'Atua com melhoria de processos, organização de rotinas e liderança de equipes.',
       },
     },
     requirements: [
-      { id: 'req-1', description: 'Indicado para lideres, coordenadores e profissionais de projeto.' },
-      { id: 'req-2', description: 'Nao exige certificacao previa em agilidade.' },
+      { id: 'req-1', description: 'Indicado para líderes, coordenadores e profissionais de projetos.' },
+      { id: 'req-2', description: 'Não exige certificação prévia em metodologias ágeis.' },
     ],
     outcomes: [
       { id: 'out-1', description: 'Organizar ritos e prioridades com clareza.' },
-      { id: 'out-2', description: 'Acompanhar entregas sem microgestao.' },
-      { id: 'out-3', description: 'Melhorar colaboracao e previsibilidade do time.' },
+      { id: 'out-2', description: 'Acompanhar entregas sem microgestão.' },
+      { id: 'out-3', description: 'Melhorar a colaboração e a previsibilidade da equipe.' },
     ],
     modules: [
       {
         id: 'mod-1',
-        title: 'Fundamentos ageis',
-        description: 'Principios para organizar pessoas e trabalho.',
+        title: 'Fundamentos ágeis',
+        description: 'Princípios para organizar pessoas e trabalho.',
         lessons: [
           { id: 'les-1', title: 'Backlog, sprint e foco', description: null, videoDuration: 15, isPreview: true },
-          { id: 'les-2', title: 'Papéis e cadencia', description: null, videoDuration: 18, isPreview: false },
+          { id: 'les-2', title: 'Papéis e cadência', description: null, videoDuration: 18, isPreview: false },
         ],
       },
       {
         id: 'mod-2',
-        title: 'Gestao aplicada',
-        description: 'Como levar a teoria para a rotina do time.',
+        title: 'Gestão aplicada',
+        description: 'Como levar a teoria para a rotina da equipe.',
         lessons: [
           { id: 'les-3', title: 'Ritmos de acompanhamento', description: null, videoDuration: 16, isPreview: false },
           { id: 'les-4', title: 'Indicadores e alinhamento', description: null, videoDuration: 17, isPreview: false },
