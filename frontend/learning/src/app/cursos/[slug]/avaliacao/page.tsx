@@ -6,6 +6,8 @@ import { useEffect, useMemo, useState } from 'react'
 import { authFetch } from '../../../../lib/auth-client'
 import { formatPercent } from '../../../../lib/formatters'
 
+export const runtime = 'edge'
+
 type AssessmentPayload = {
   id: string
   title: string

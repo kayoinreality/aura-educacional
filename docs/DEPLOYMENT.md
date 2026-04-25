@@ -5,8 +5,8 @@
 Para o estado atual do projeto, o melhor caminho e:
 
 - manter o monorepo
-- publicar o frontend publico no Cloudflare Pages
-- subir o backend/API na VPS
+- publicar os frontends no Cloudflare Pages, um projeto por subdominio
+- subir somente o backend/API e servicos internos na VPS
 - manter PostgreSQL, Redis e rotinas internas na VPS
 
 Isso preserva o compartilhamento de `packages/*` sem separar repositorios antes da hora.
@@ -14,43 +14,78 @@ Isso preserva o compartilhamento de `packages/*` sem separar repositorios antes 
 ## Estrutura usada no deploy
 
 ```text
-frontend/web    -> site publico
-frontend/admin  -> console administrativo
-backend/api     -> API principal
-packages/*      -> codigo compartilhado
+frontend/web       -> site publico em auraeducacional.app
+frontend/learning  -> area do aluno em app.auraeducacional.app
+frontend/admin     -> console administrativo em admin.auraeducacional.app
+backend/api        -> API principal em api.auraeducacional.app
+packages/*         -> codigo compartilhado
 ```
 
-## Frontend no Cloudflare Pages
+## Frontends no Cloudflare Pages
 
-### Variaveis de ambiente
+Crie tres projetos Pages apontando para o mesmo repositorio GitHub e branch `main`.
+Como o projeto e um monorepo, mantenha o root directory como `/` e troque apenas o
+workspace usado no build.
 
-No projeto do Cloudflare Pages, configure:
+### Site publico
+
+```text
+Project name: aura-educacional
+Custom domains: auraeducacional.app, www.auraeducacional.app
+Framework preset: Next.js
+Production branch: main
+Root directory: /
+Build command: npm install && npm --workspace @aura/web run cf:build
+Build output directory: frontend/web/.vercel/output/static
+```
+
+Variaveis:
 
 ```bash
-NEXT_PUBLIC_API_URL=https://api.seu-dominio.com
+NEXT_PUBLIC_API_URL=https://api.auraeducacional.app
+NEXT_PUBLIC_LEARNING_URL=https://app.auraeducacional.app
 NEXT_PUBLIC_GOOGLE_CLIENT_ID=seu-client-id.apps.googleusercontent.com
 ```
 
-Enquanto a VPS nao estiver no ar, o frontend pode ser publicado, mas login, checkout,
-area do aluno e certificados so vao funcionar completamente quando a API estiver acessivel.
+### Area do aluno
 
-### Configuracao recomendada do projeto
+```text
+Project name: aura-learning
+Custom domain: app.auraeducacional.app
+Framework preset: Next.js
+Production branch: main
+Root directory: /
+Build command: npm install && npm --workspace @aura/learning run cf:build
+Build output directory: frontend/learning/.vercel/output/static
+```
 
-Use estas referencias ao criar o Pages project:
+Variaveis:
 
-- Framework preset: `Next.js`
-- Production branch: `main`
-- Root directory: `/`
-- Build command: `npm install && npm --workspace @aura/web run cf:build`
-- Build output directory: `frontend/web/.vercel/output/static`
+```bash
+NEXT_PUBLIC_API_URL=https://api.auraeducacional.app
+NEXT_PUBLIC_SITE_URL=https://auraeducacional.app
+```
 
-Como este e um monorepo, mantenha o repositório inteiro conectado ao Pages e deixe o build
-rodar a partir da raiz.
+### Admin
 
-### Observacao sobre Next.js
+```text
+Project name: aura-admin
+Custom domain: admin.auraeducacional.app
+Framework preset: Next.js
+Production branch: main
+Root directory: /
+Build command: npm install && npm --workspace @aura/admin run cf:build
+Build output directory: frontend/admin/.vercel/output/static
+```
 
-O frontend atual consome a API externa e usa rotas dinamicas. Por isso, a configuracao de
-producao depende do dominio final da API e do CORS correto no backend.
+Variaveis:
+
+```bash
+NEXT_PUBLIC_API_URL=https://api.auraeducacional.app
+```
+
+O Cloudflare Pages deve continuar usando Git integration. Assim, cada push na `main`
+gera deploy automatico dos tres projetos.
 
 ## Backend na VPS
 
@@ -60,14 +95,14 @@ Antes de subir a API, ajuste o `.env` com valores reais, por exemplo:
 
 ```bash
 NODE_ENV=production
-APP_URL=https://seu-projeto.pages.dev
-API_URL=https://api.seu-dominio.com
-CORS_ORIGINS=https://seu-projeto.pages.dev,https://www.seu-dominio.com
-COOKIE_DOMAIN=
+APP_URL=https://auraeducacional.app
+API_URL=https://api.auraeducacional.app
+CORS_ORIGINS=https://auraeducacional.app,https://www.auraeducacional.app,https://app.auraeducacional.app,https://admin.auraeducacional.app
+COOKIE_DOMAIN=.auraeducacional.app
 ```
 
-Use `COOKIE_DOMAIN` apenas se for realmente compartilhar o cookie entre subdominios do mesmo
-dominio raiz. Se o frontend estiver em `pages.dev`, deixe esse campo vazio.
+Use `COOKIE_DOMAIN=.auraeducacional.app` para compartilhar o cookie de refresh entre
+os subdominios do site, app do aluno e admin.
 
 ### CORS e autenticacao cross-origin
 
@@ -98,13 +133,14 @@ ufw enable
 
 ### 2. Configurar DNS
 
-No painel do dominio, adicione:
+No Cloudflare DNS, os frontends devem ser ligados pelos Custom Domains do Pages.
+Para a API na VPS, adicione:
 
 ```text
-A    @      -> IP_DO_SERVIDOR
-A    www    -> IP_DO_SERVIDOR
 A    api    -> IP_DO_SERVIDOR
 ```
+
+Nao aponte `@`, `www`, `app` ou `admin` para a VPS se eles estiverem no Pages.
 
 ### 3. Clonar e configurar
 
@@ -135,7 +171,7 @@ npm run db:seed:api
 ### 5. Validar a API
 
 ```bash
-curl https://api.seu-dominio.com/health
+curl https://api.auraeducacional.app/health
 ```
 
 ### 6. Ver logs
@@ -148,11 +184,12 @@ docker compose --env-file infra/docker/.env -f infra/docker/docker-compose.yml l
 
 ## Checklist rapido de producao
 
-- frontend publicado no Cloudflare Pages
+- tres frontends publicados no Cloudflare Pages
 - `NEXT_PUBLIC_API_URL` apontando para a API real
+- `NEXT_PUBLIC_LEARNING_URL` apontando para `https://app.auraeducacional.app`
 - backend com `NODE_ENV=production`
 - `APP_URL` e `API_URL` corretos
-- `CORS_ORIGINS` contendo o dominio do frontend
+- `CORS_ORIGINS` contendo site publico, learning e admin
 - HTTPS ativo na API
 - Stripe webhook apontando para a URL publica da API
 - Google OAuth com dominios autorizados de producao

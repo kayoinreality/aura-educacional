@@ -115,10 +115,11 @@ npm run dev:admin
 Mapeamento recomendado para produção:
 
 ```text
-www.aura-educacional.com.br       -> frontend/web
-app.aura-educacional.com.br       -> frontend/learning
-admin.aura-educacional.com.br     -> frontend/admin
-api.aura-educacional.com.br       -> backend/api
+auraeducacional.app               -> frontend/web
+www.auraeducacional.app           -> frontend/web
+app.auraeducacional.app           -> frontend/learning
+admin.auraeducacional.app         -> frontend/admin
+api.auraeducacional.app           -> backend/api
 ```
 
 Em desenvolvimento, os mesmos papéis ficam em portas locais:

@@ -91,8 +91,8 @@ services:
     env_file: ../../apps/web/.env
     environment:
       NODE_ENV: production
-      NEXT_PUBLIC_API_URL: https://api.aura-educacional.com.br
-      NEXT_PUBLIC_LEARNING_URL: https://app.aura-educacional.com.br
+      NEXT_PUBLIC_API_URL: https://api.auraeducacional.app
+      NEXT_PUBLIC_LEARNING_URL: https://app.auraeducacional.app
     depends_on:
       - api
     networks:
@@ -109,8 +109,8 @@ services:
     restart: unless-stopped
     environment:
       NODE_ENV: production
-      NEXT_PUBLIC_SITE_URL: https://www.aura-educacional.com.br
-      NEXT_PUBLIC_API_URL: https://api.aura-educacional.com.br
+      NEXT_PUBLIC_SITE_URL: https://auraeducacional.app
+      NEXT_PUBLIC_API_URL: https://api.auraeducacional.app
     depends_on:
       - api
     networks:
@@ -127,7 +127,7 @@ services:
     restart: unless-stopped
     environment:
       NODE_ENV: production
-      NEXT_PUBLIC_API_URL: https://api.aura-educacional.com.br
+      NEXT_PUBLIC_API_URL: https://api.auraeducacional.app
     depends_on:
       - api
     networks:
@@ -171,11 +171,11 @@ services:
       certonly --webroot -w /var/www/certbot
       --email ${SSL_EMAIL}
       --agree-tos --no-eff-email
-      -d aura-educacional.com.br
-      -d www.aura-educacional.com.br
-      -d app.aura-educacional.com.br
-      -d admin.aura-educacional.com.br
-      -d api.aura-educacional.com.br
+      -d auraeducacional.app
+      -d www.auraeducacional.app
+      -d app.auraeducacional.app
+      -d admin.auraeducacional.app
+      -d api.auraeducacional.app
 
   # ─── MINIO (armazenamento de arquivos — S3 compatível) ──────────────────────
   minio:

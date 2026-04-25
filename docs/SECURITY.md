@@ -127,8 +127,10 @@ Permissions-Policy: camera=(), microphone=(), geolocation=()
 Apenas origens explicitamente listadas são aceitas:
 ```typescript
 const allowedOrigins = [
-  'https://aura-educacional.com.br',
-  'https://www.aura-educacional.com.br',
+  'https://auraeducacional.app',
+  'https://www.auraeducacional.app',
+  'https://app.auraeducacional.app',
+  'https://admin.auraeducacional.app',
   process.env.NODE_ENV === 'development' ? 'http://localhost:3000' : '',
 ].filter(Boolean)
 ```
