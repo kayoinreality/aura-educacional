@@ -54,8 +54,8 @@ services:
   # ─── API (Fastify) ─────────────────────────────────────────────────────────
   api:
     build:
-      context: ../../apps/api
-      dockerfile: Dockerfile
+      context: ../..
+      dockerfile: backend/api/Dockerfile
       target: production
     container_name: aura_api
     restart: unless-stopped
@@ -83,12 +83,48 @@ services:
   # ─── WEB (Next.js) ─────────────────────────────────────────────────────────
   web:
     build:
-      context: ../../apps/web
-      dockerfile: Dockerfile
+      context: ../..
+      dockerfile: frontend/web/Dockerfile
       target: production
     container_name: aura_web
     restart: unless-stopped
     env_file: ../../apps/web/.env
+    environment:
+      NODE_ENV: production
+      NEXT_PUBLIC_API_URL: https://api.aura-educacional.com.br
+      NEXT_PUBLIC_LEARNING_URL: https://app.aura-educacional.com.br
+    depends_on:
+      - api
+    networks:
+      - aura_internal
+      - aura_external
+
+  # ─── LEARNING (Next.js - ambiente do aluno) ────────────────────────────────
+  learning:
+    build:
+      context: ../..
+      dockerfile: frontend/learning/Dockerfile
+      target: production
+    container_name: aura_learning
+    restart: unless-stopped
+    environment:
+      NODE_ENV: production
+      NEXT_PUBLIC_SITE_URL: https://www.aura-educacional.com.br
+      NEXT_PUBLIC_API_URL: https://api.aura-educacional.com.br
+    depends_on:
+      - api
+    networks:
+      - aura_internal
+      - aura_external
+
+  # ─── ADMIN (Next.js - operação interna) ────────────────────────────────────
+  admin:
+    build:
+      context: ../..
+      dockerfile: frontend/admin/Dockerfile
+      target: production
+    container_name: aura_admin
+    restart: unless-stopped
     environment:
       NODE_ENV: production
       NEXT_PUBLIC_API_URL: https://api.aura-educacional.com.br
@@ -114,6 +150,8 @@ services:
     depends_on:
       - api
       - web
+      - learning
+      - admin
     networks:
       - aura_external
     healthcheck:
@@ -135,6 +173,8 @@ services:
       --agree-tos --no-eff-email
       -d aura-educacional.com.br
       -d www.aura-educacional.com.br
+      -d app.aura-educacional.com.br
+      -d admin.aura-educacional.com.br
       -d api.aura-educacional.com.br
 
   # ─── MINIO (armazenamento de arquivos — S3 compatível) ──────────────────────

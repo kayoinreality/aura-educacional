@@ -4,7 +4,12 @@ Plataforma de cursos livres com catálogo público, autenticação de alunos, pa
 
 ## Visão geral
 
-O projeto está organizado como monorepo e separa claramente a experiência pública, a API e os pacotes compartilhados.
+O projeto está organizado como monorepo e separa claramente os subdomínios da plataforma:
+
+- `www` / raiz: experiência pública, catálogo, checkout e certificados públicos
+- `app`: ambiente de aprendizagem do aluno
+- `admin`: painel administrativo e operação interna
+- `api`: backend Fastify compartilhado pelos frontends
 
 Principais fluxos já implementados:
 - página pública de apresentação da plataforma
@@ -23,7 +28,8 @@ aura-educacional/
   backend/
     api/        # API Fastify + Prisma + Redis + Stripe
   frontend/
-    web/        # site público e área do aluno em Next.js
+    web/        # site público, catálogo, checkout e certificados públicos
+    learning/   # ambiente do aluno para estudos, progresso e avaliação
     admin/      # aplicação administrativa separada
   packages/     # tipos, utilitários e componentes compartilhados
   infra/        # docker, serviços locais e arquivos de suporte
@@ -82,7 +88,13 @@ npm run dev:api
 npm run dev:web
 ```
 
-6. Se quiser iniciar também o painel administrativo:
+6. Inicie o ambiente do aluno:
+
+```bash
+npm run dev:learning
+```
+
+7. Se quiser iniciar também o painel administrativo:
 
 ```bash
 npm run dev:admin
@@ -93,9 +105,30 @@ npm run dev:admin
 - site público: `http://127.0.0.1:3000`
 - API: `http://127.0.0.1:3001`
 - admin: `http://127.0.0.1:3002`
+- ambiente do aluno: `http://127.0.0.1:3003`
 - PostgreSQL: `127.0.0.1:5432`
 - Redis: `127.0.0.1:6379`
 - pgAdmin: `http://127.0.0.1:5050`
+
+## Subdomínios
+
+Mapeamento recomendado para produção:
+
+```text
+www.aura-educacional.com.br       -> frontend/web
+app.aura-educacional.com.br       -> frontend/learning
+admin.aura-educacional.com.br     -> frontend/admin
+api.aura-educacional.com.br       -> backend/api
+```
+
+Em desenvolvimento, os mesmos papéis ficam em portas locais:
+
+```text
+127.0.0.1:3000 -> web
+127.0.0.1:3003 -> learning
+127.0.0.1:3002 -> admin
+127.0.0.1:3001 -> api
+```
 
 ## Scripts principais
 
@@ -103,6 +136,7 @@ npm run dev:admin
 npm run dev
 npm run build
 npm run dev:web
+npm run dev:learning
 npm run dev:api
 npm run dev:admin
 npm run docker:dev:up
@@ -115,7 +149,7 @@ npm run db:seed:api
 
 Use `.env.example` como base. Os grupos mais importantes são:
 
-- aplicação e URLs
+- aplicação, URLs e subdomínios
 - PostgreSQL e Redis
 - JWT e cookies
 - Google OAuth
@@ -125,7 +159,13 @@ Use `.env.example` como base. Os grupos mais importantes são:
 No frontend público, as variáveis mais relevantes são:
 
 - `NEXT_PUBLIC_API_URL`
+- `NEXT_PUBLIC_LEARNING_URL`
 - `NEXT_PUBLIC_GOOGLE_CLIENT_ID`
+
+No frontend de aprendizagem, as variáveis mais relevantes são:
+
+- `NEXT_PUBLIC_API_URL`
+- `NEXT_PUBLIC_SITE_URL`
 
 No backend, as mais relevantes são:
 
@@ -142,6 +182,8 @@ No backend, as mais relevantes são:
 Estratégia atual:
 
 - frontend público no Cloudflare Pages
+- frontend de aprendizagem no subdomínio `app`
+- frontend administrativo no subdomínio `admin`
 - backend em VPS própria
 - monorepo mantido em um único repositório
 
@@ -153,5 +195,6 @@ Guias complementares:
 ## Observações
 
 - A área pública não depende da área administrativa para navegação do aluno.
+- O ambiente do aluno agora fica em `frontend/learning`, separado do site público.
 - O frontend possui conteúdo de fallback para demonstração quando a API pública ainda não está disponível.
 - O CORS do backend já foi preparado para produção com frontend e API em origens separadas.

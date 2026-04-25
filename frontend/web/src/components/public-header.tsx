@@ -5,6 +5,8 @@ import { useRouter } from 'next/navigation'
 import { logoutSession } from '../lib/auth-client'
 import { usePublicSession } from '../lib/use-public-session'
 
+const LEARNING_URL = process.env.NEXT_PUBLIC_LEARNING_URL || 'http://127.0.0.1:3003'
+
 export function PublicHeader() {
   const router = useRouter()
   const session = usePublicSession()
@@ -24,7 +26,7 @@ export function PublicHeader() {
 
         <nav className="public-header__nav">
           <Link href="/cursos">Cursos</Link>
-          <Link href="/meus-cursos">Área do aluno</Link>
+          <a href={LEARNING_URL}>Área do aluno</a>
           <Link href="/certificados">Certificados</Link>
         </nav>
 

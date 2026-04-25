@@ -16,6 +16,7 @@
     "lint": "turbo run lint",
     "format": "prettier --write \"**/*.{ts,tsx,md,json}\"",
     "dev:web": "npm --workspace @aura/web run dev",
+    "dev:learning": "npm --workspace @aura/learning run dev",
     "dev:admin": "npm --workspace @aura/admin run dev",
     "dev:api": "npm --workspace @aura/api run dev",
     "db:migrate": "turbo run db:migrate",
