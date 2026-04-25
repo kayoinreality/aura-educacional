@@ -9,7 +9,7 @@ export default function CertificatesPage() {
         <span className="eyebrow">Certificados</span>
         <h1>Consulte certificados emitidos pela Aura.</h1>
         <p>A validação pública continua no site principal. O painel do aluno destaca certificados dentro de cada curso concluído.</p>
-        <a className="primary-action" href={`${process.env.NEXT_PUBLIC_SITE_URL || 'http://127.0.0.1:3000'}/certificados`}>
+        <a className="primary-action" href={`${process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'}/certificados`}>
           Abrir validação pública
         </a>
         <Link className="secondary-action" href="/">

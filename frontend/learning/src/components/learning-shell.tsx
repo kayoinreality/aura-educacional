@@ -5,7 +5,7 @@ import { usePathname, useRouter } from 'next/navigation'
 import { logoutSession } from '../lib/auth-client'
 import { usePublicSession } from '../lib/use-public-session'
 
-const PUBLIC_SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'http://127.0.0.1:3000'
+const PUBLIC_SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'
 
 export function LearningShell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname()

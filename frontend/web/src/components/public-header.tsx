@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation'
 import { logoutSession } from '../lib/auth-client'
 import { usePublicSession } from '../lib/use-public-session'
 
-const LEARNING_URL = process.env.NEXT_PUBLIC_LEARNING_URL || 'http://127.0.0.1:3003'
+const LEARNING_URL = process.env.NEXT_PUBLIC_LEARNING_URL || 'http://localhost:3003'
 
 export function PublicHeader() {
   const router = useRouter()

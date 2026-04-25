@@ -102,10 +102,10 @@ npm run dev:admin
 
 ## Endereços locais
 
-- site público: `http://127.0.0.1:3000`
+- site público: `http://localhost:3000`
 - API: `http://127.0.0.1:3001`
-- admin: `http://127.0.0.1:3002`
-- ambiente do aluno: `http://127.0.0.1:3003`
+- admin: `http://localhost:3002`
+- ambiente do aluno: `http://localhost:3003`
 - PostgreSQL: `127.0.0.1:5432`
 - Redis: `127.0.0.1:6379`
 - pgAdmin: `http://127.0.0.1:5050`
@@ -124,9 +124,9 @@ api.aura-educacional.com.br       -> backend/api
 Em desenvolvimento, os mesmos papéis ficam em portas locais:
 
 ```text
-127.0.0.1:3000 -> web
-127.0.0.1:3003 -> learning
-127.0.0.1:3002 -> admin
+localhost:3000 -> web
+localhost:3003 -> learning
+localhost:3002 -> admin
 127.0.0.1:3001 -> api
 ```
 

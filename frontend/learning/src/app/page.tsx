@@ -128,7 +128,7 @@ export default function LearningDashboardPage() {
         <section className="empty-state">
           <h2>Nenhum curso ativo</h2>
           <p>Quando uma matrícula for confirmada, ela aparecerá aqui automaticamente.</p>
-          <a className="primary-action" href={`${process.env.NEXT_PUBLIC_SITE_URL || 'http://127.0.0.1:3000'}/cursos`}>
+          <a className="primary-action" href={`${process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'}/cursos`}>
             Ver catálogo
           </a>
         </section>
