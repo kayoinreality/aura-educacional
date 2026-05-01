@@ -1,0 +1,47 @@
+{% extends "base.html" %}
+{% block title %}Matrículas{% endblock %}
+{% block page_title %}Matrículas{% endblock %}
+
+{% block content %}
+<div class="table-wrap">
+  <table>
+    <thead>
+      <tr>
+        <th>Aluno</th>
+        <th>Curso</th>
+        <th>Status</th>
+        <th>Progresso</th>
+        <th>Concluído em</th>
+        <th>Data</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for e in enrollments %}
+      <tr>
+        <td>{{ e.student.firstName }} {{ e.student.lastName }}</td>
+        <td>{{ e.course.title }}</td>
+        <td><span class="badge badge--{{ e.status | lower }}">{{ e.status }}</span></td>
+        <td>{{ (e.progress * 100) | round(1) }}%</td>
+        <td>{{ e.completedAt | fmt_date }}</td>
+        <td>{{ e.createdAt | fmt_date }}</td>
+      </tr>
+      {% else %}
+      <tr><td colspan="6" style="text-align:center;color:var(--text-muted)">Nenhuma matrícula encontrada.</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+
+{% set pages = (total / page_size) | round(0, 'ceil') | int %}
+{% if pages > 1 %}
+<div class="pagination">
+  {% for p in range(1, pages + 1) %}
+    {% if p == page %}
+      <span class="current">{{ p }}</span>
+    {% else %}
+      <a href="?page={{ p }}">{{ p }}</a>
+    {% endif %}
+  {% endfor %}
+</div>
+{% endif %}
+{% endblock %}

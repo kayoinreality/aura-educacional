@@ -6,7 +6,7 @@
   "description": "Aura Educacional - Plataforma de cursos livres e certificados",
   "workspaces": [
     "frontend/*",
-    "backend/*",
+    "backend/api",
     "packages/*"
   ],
   "scripts": {
@@ -32,7 +32,9 @@
     "docker:dev:up": "docker compose --env-file infra/docker/.env -f infra/docker/docker-compose.dev.yml --profile tools up -d",
     "docker:dev:down": "docker compose --env-file infra/docker/.env -f infra/docker/docker-compose.dev.yml --profile tools down",
     "docker:dev:logs": "docker compose --env-file infra/docker/.env -f infra/docker/docker-compose.dev.yml logs -f",
-    "docker:dev:ps": "docker compose --env-file infra/docker/.env -f infra/docker/docker-compose.dev.yml ps"
+    "docker:dev:ps": "docker compose --env-file infra/docker/.env -f infra/docker/docker-compose.dev.yml ps",
+    "dev:admin-py": "cd backend/admin-py && python run.py",
+    "install:admin-py": "cd backend/admin-py && pip install -r requirements.txt"
   },
   "devDependencies": {
     "turbo": "^2.0.0",

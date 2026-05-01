@@ -74,6 +74,24 @@ services:
       postgres:
         condition: service_healthy
 
+  admin-py:
+    build:
+      context: ../..
+      dockerfile: backend/admin-py/Dockerfile
+    container_name: aura_admin_py_dev
+    restart: unless-stopped
+    profiles: ["tools"]
+    environment:
+      DATABASE_URL: postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB}
+      ADMIN_PY_SESSION_SECRET: ${ADMIN_PY_SESSION_SECRET:-dev-secret-change-me}
+      ADMIN_PY_APP_NAME: ${ADMIN_PY_APP_NAME:-Aura Backoffice}
+      ADMIN_PY_SECURE_COOKIES: "false"
+    ports:
+      - "127.0.0.1:3004:3004"
+    depends_on:
+      postgres:
+        condition: service_healthy
+
 volumes:
   postgres_dev_data:
     driver: local
