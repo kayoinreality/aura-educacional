@@ -19,6 +19,8 @@ const mono = DM_Mono({
   weight: ['400', '500'],
 })
 
+export const runtime = 'edge'
+
 export const metadata: Metadata = {
   title: 'Aura Educacional',
   description:

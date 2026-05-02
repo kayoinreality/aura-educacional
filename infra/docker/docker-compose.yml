@@ -134,6 +134,25 @@ services:
       - aura_internal
       - aura_external
 
+  # ─── BACKOFFICE PYTHON (FastAPI) ───────────────────────────────────────────
+  admin-py:
+    build:
+      context: ../..
+      dockerfile: backend/admin-py/Dockerfile
+    container_name: aura_admin_py
+    restart: unless-stopped
+    environment:
+      DATABASE_URL: postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB}
+      ADMIN_PY_SESSION_SECRET: ${ADMIN_PY_SESSION_SECRET}
+      ADMIN_PY_APP_NAME: ${ADMIN_PY_APP_NAME:-Aura Backoffice}
+      ADMIN_PY_SECURE_COOKIES: "true"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - aura_internal
+      - aura_external
+
   # ─── NGINX (reverse proxy + SSL) ───────────────────────────────────────────
   nginx:
     image: nginx:alpine
@@ -152,6 +171,7 @@ services:
       - web
       - learning
       - admin
+      - admin-py
     networks:
       - aura_external
     healthcheck:
@@ -176,6 +196,7 @@ services:
       -d app.auraeducacional.app
       -d admin.auraeducacional.app
       -d api.auraeducacional.app
+      -d backoffice.auraeducacional.app
 
   # ─── MINIO (armazenamento de arquivos — S3 compatível) ──────────────────────
   minio:

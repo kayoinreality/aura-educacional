@@ -27,6 +27,7 @@ Principais fluxos já implementados:
 aura-educacional/
   backend/
     api/        # API Fastify + Prisma + Redis + Stripe
+    admin-py/   # backoffice Python (FastAPI + SQLAlchemy + Jinja2)
   frontend/
     web/        # site público, catálogo, checkout e certificados públicos
     learning/   # ambiente do aluno para estudos, progresso e avaliação
@@ -39,9 +40,9 @@ aura-educacional/
 ## Stack
 
 - Frontend: Next.js 14
-- Backend: Fastify
+- Backend principal: Fastify + Prisma + Redis
+- Backoffice: FastAPI + SQLAlchemy 2.0 + Jinja2
 - Banco de dados: PostgreSQL
-- ORM: Prisma
 - Cache e tokens: Redis
 - Pagamentos: Stripe
 - Login social: Google Identity Services
@@ -104,11 +105,41 @@ npm run dev:admin
 
 - site público: `http://localhost:3000`
 - API: `http://127.0.0.1:3001`
-- admin: `http://localhost:3002`
+- admin (Next.js): `http://localhost:3002`
 - ambiente do aluno: `http://localhost:3003`
+- backoffice Python: `http://localhost:3004`
 - PostgreSQL: `127.0.0.1:5432`
 - Redis: `127.0.0.1:6379`
 - pgAdmin: `http://127.0.0.1:5050`
+
+## Fluxo de pagamento → LMS
+
+Após a confirmação do pagamento no Stripe, a página de sucesso (`/checkout/sucesso`) constrói uma URL de handoff com o token JWT e os dados do usuário codificados em base64. O aluno é redirecionado automaticamente em 2,5 segundos para `/auth/handoff` no ambiente de aprendizagem, que lê o hash da URL, grava a sessão no `localStorage` e redireciona para o curso comprado — sem exigir login manual.
+
+## Backoffice Python
+
+O `backend/admin-py` é uma aplicação FastAPI independente que acessa o mesmo banco PostgreSQL da API principal. Ele fornece uma interface web de administração com:
+
+- **Dashboard** com estatísticas (usuários, cursos, matrículas, receita)
+- **Usuários** com busca e paginação
+- **Cursos** com busca e paginação
+- **Matrículas** com visão consolidada
+- **Pagamentos** com histórico completo
+
+Autenticação via cookie assinado com `itsdangerous` — somente usuários com role `ADMIN` ou `INSTRUCTOR` têm acesso.
+
+Para rodar localmente:
+
+```bash
+npm run install:admin-py
+npm run dev:admin-py
+```
+
+Ou via Docker (perfil `tools`):
+
+```bash
+npm run docker:dev:up
+```
 
 ## Subdomínios
 
@@ -120,6 +151,7 @@ www.auraeducacional.app           -> frontend/web
 app.auraeducacional.app           -> frontend/learning
 admin.auraeducacional.app         -> frontend/admin
 api.auraeducacional.app           -> backend/api
+backoffice.auraeducacional.app    -> backend/admin-py
 ```
 
 Em desenvolvimento, os mesmos papéis ficam em portas locais:
@@ -140,6 +172,8 @@ npm run dev:web
 npm run dev:learning
 npm run dev:api
 npm run dev:admin
+npm run dev:admin-py       # backoffice Python
+npm run install:admin-py   # instala dependências Python
 npm run docker:dev:up
 npm run docker:dev:down
 npm run db:migrate:api
@@ -177,6 +211,12 @@ No backend, as mais relevantes são:
 - `STRIPE_SECRET_KEY`
 - `STRIPE_WEBHOOK_SECRET`
 - `CORS_ORIGINS`
+
+No backoffice Python, as mais relevantes são:
+
+- `DATABASE_URL` (compartilhada com a API)
+- `ADMIN_PY_SESSION_SECRET`
+- `ADMIN_PY_SECURE_COOKIES`
 
 ## Deploy
 
