@@ -1,5 +1,7 @@
 'use client'
 
+export const runtime = 'edge'
+
 import { useEffect, useState } from 'react'
 import { API_URL } from '../../lib/api'
 import { authFetch } from '../../lib/auth-client'

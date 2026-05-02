@@ -27,19 +27,25 @@ Crie tres projetos Pages apontando para o mesmo repositorio GitHub e branch `mai
 Como o projeto e um monorepo, mantenha o root directory como `/` e troque apenas o
 workspace usado no build.
 
+Cada frontend ja tem `wrangler.toml` com:
+- `compatibility_date = "2024-09-23"`
+- `compatibility_flags = ["nodejs_compat"]`
+
+O CF Pages le automaticamente o `wrangler.toml` do diretorio onde o `next build` roda.
+
 ### Site publico
 
 ```text
 Project name: aura-educacional
 Custom domains: auraeducacional.app, www.auraeducacional.app
-Framework preset: Next.js
+Framework preset: None (manual)
 Production branch: main
 Root directory: /
 Build command: npm install && npm --workspace @aura/web run cf:build
 Build output directory: frontend/web/.vercel/output/static
 ```
 
-Variaveis:
+Variaveis de ambiente:
 
 ```bash
 NEXT_PUBLIC_API_URL=https://api.auraeducacional.app
@@ -52,11 +58,18 @@ NEXT_PUBLIC_GOOGLE_CLIENT_ID=seu-client-id.apps.googleusercontent.com
 ```text
 Project name: aura-learning
 Custom domain: app.auraeducacional.app
-Framework preset: Next.js
+Framework preset: None (manual)
 Production branch: main
 Root directory: /
 Build command: npm install && npm --workspace @aura/learning run cf:build
 Build output directory: frontend/learning/.vercel/output/static
+```
+
+Variaveis de ambiente:
+
+```bash
+NEXT_PUBLIC_API_URL=https://api.auraeducacional.app
+NEXT_PUBLIC_SITE_URL=https://auraeducacional.app
 ```
 
 Variaveis:
