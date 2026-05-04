@@ -1,209 +1,88 @@
-# 🔐 AURA Educacional — Política de Segurança
+# Segurança & LGPD
 
-> Documento técnico sobre todas as camadas de segurança implementadas na plataforma.
+## Autenticação
 
----
+- **Firebase Auth** é a fonte de verdade. Senhas nunca trafegam pela API.
+- **ID tokens** rotacionam a cada hora (Firebase). API valida via Admin SDK em todo request com `requireAuth`.
+- **Email verification** obrigatório para acesso ao app `learn`. Firebase envia o email automaticamente.
+- **Google OAuth** habilitado (signin frictionless).
 
-## 1. Senhas
+## Autorização
 
-### Hash com bcrypt (rounds = 12)
+- Custom claims no Firebase token (`role: "admin" | "instructor" | "student"`) — escritos via `setUserClaims` do Admin SDK.
+- API checa role com middleware `requireRole('admin')`.
+- App `admin` valida no servidor (server component) que o usuário tem role admin antes de renderizar.
 
-Nunca armazenamos senhas em texto plano. Usamos bcrypt com **custo 12**, que torna cada hash propositalmente lento (~300ms). Isso é intencional:
+## Webhooks
 
-```
-Atacante com GPU roubando o banco:
-- MD5:    9 bilhões de tentativas/segundo ← INSEGURO
-- SHA256: 3 bilhões de tentativas/segundo ← INSEGURO  
-- bcrypt 12: ~30 tentativas/SEGUNDO       ← SEGURO
-```
+- **Stripe**: HMAC validado em `constructEvent`. Sem secret correto → 400.
+- **Mux**: HMAC com `MUX_WEBHOOK_SECRET` (a implementar antes de produção).
+- **Idempotência**: `webhook_events.event_id UNIQUE`. Reprocesso retorna `{ duplicate: true }`.
 
-### Política de senhas
-- Mínimo 8 caracteres
-- Ao menos 1 maiúscula, 1 minúscula, 1 número, 1 especial
-- Validado com Zod no backend (frontend valida para UX, mas backend é a fonte da verdade)
+## Segredos
 
----
+- Todos os secrets em **Secret Manager**, montados como env vars no Cloud Run via `--set-secrets`.
+- **Nunca** commitar `.env` (gitignored).
+- Service accounts com **least privilege** (só os scopes necessários).
 
-## 2. Proteção contra Brute Force
+## Rate limiting
 
-```
-Login falhado:
-  Redis INCR auth:attempts:{email}   [TTL: 1 hora]
-  Se >= 5 tentativas:
-    Redis SET auth:locked:{email} 1  [TTL: 30 minutos]
-    Resposta: HTTP 429 com tempo de espera
+- Cloud Run tem rate limiting nativo via concurrency.
+- Endpoints sensíveis (webhook, login, `complete-course`) terão rate-limit por IP via middleware Hono — implementar antes de produção pública.
 
-Login bem-sucedido:
-  Redis DEL auth:attempts:{email}
-  Redis DEL auth:locked:{email}
-```
+## LGPD
 
-Além disso, adicionamos **delay aleatório** (500–1000ms) em respostas de falha para dificultar timing attacks.
+### Dados pessoais coletados
+- Email, nome, avatar (de Google/cadastro).
+- CPF e data de nascimento (opcional, necessário para certificado nominal).
+- IP e user-agent (em `login_history`).
+- Stripe customer ID (financeiro).
 
----
+### Direitos do titular
+- **Acesso**: `/conta/dados` — exporta tudo em JSON via `GET /user/export`.
+- **Correção**: `/conta/perfil` — usuário edita seus dados.
+- **Exclusão**: `POST /user/delete` → soft delete (`users.deleted_at`). Job cron purga após 30 dias se não cancelado. Certificados emitidos são preservados (snapshots permanecem para verificação pública, conforme termos).
+- **Portabilidade**: idem export.
+- **Revogação de consentimento**: opt-out de marketing emails — flag em `metadata`.
 
-## 3. User Enumeration (Enumeração de Usuários)
+### Encarregado de dados (DPO)
+Email: `lgpd@auraeducacional.com.br` — registrar no termo de privacidade.
 
-Um atacante não deve conseguir descobrir quais e-mails estão cadastrados. Para isso:
+### Cookies
+- Apenas essenciais (sessão Firebase) por padrão.
+- Banner de consentimento para analytics/marketing antes de carregar GA/pixel.
 
-| Endpoint | Proteção |
-|----------|---------|
-| `POST /auth/login` | Mensagem genérica: "E-mail ou senha inválidos" |
-| `POST /auth/register` | Delay de 300–500ms mesmo quando email existe |
-| `POST /auth/forgot-password` | Resposta idêntica para emails existentes e inexistentes |
+### Retenção
+- Certificados: indefinido (interesse legítimo de verificação pública).
+- Pagamentos/orders: 5 anos (obrigação fiscal).
+- Logs de login: 12 meses.
+- Conta excluída: 30 dias para purge total (exceto rastros legais).
 
----
+## Reembolso
 
-## 4. Tokens JWT
+- 7 dias garantidos por lei (CDC art. 49). Botão "Solicitar reembolso" no `app.auraeducacional.com.br/conta` redireciona para Customer Portal Stripe.
+- Reembolso automatiza revogação de `course_access` via webhook `charge.refunded`.
 
-### Access Token (15 minutos)
-- Armazenado no `localStorage` do cliente
-- Payload: `{ sub: userId, role, email, iat, exp }`
-- Validado em cada requisição autenticada
-- Vida curta reduz risco se vazar
+## Infra
 
-### Refresh Token (7 ou 30 dias)
-- Armazenado em **cookie httpOnly** (inacessível por JavaScript → proteção XSS)
-- Também salvo no Redis com TTL
-- Permite revogação imediata:
-  ```
-  Logout → DEL auth:refresh:{userId}:*
-  Troca de senha → DEL auth:refresh:{userId}:*
-  Suspeita de invasão → DEL auth:refresh:{userId}:*
-  ```
+- Cloud SQL com IP privado em VPC (sem exposição pública).
+- HTTPS em todos os endpoints (Cloud Run + Firebase Hosting fornecem certs gerenciados).
+- Backups diários do Cloud SQL com retenção de 7 dias.
+- Buckets GCS com Uniform bucket-level access + IAM.
 
----
+## Vulnerabilidades comuns mitigadas
 
-## 5. Armazenamento de Sessões em Massa
+- **SQL injection**: Drizzle ORM (queries parametrizadas).
+- **XSS**: React escapa por padrão. `secureHeaders` middleware no Hono.
+- **CSRF**: SameSite=Lax em cookies. API requer `Authorization` header (não Cookie) → CSRF não se aplica.
+- **CORS**: whitelist de origins.
+- **Open redirect**: `success_url` Stripe é validado pela própria Stripe.
+- **IDOR**: toda query filtra por `userId` derivado do token.
 
-Para suportar **milhares de usuários simultâneos** de forma escalável:
+## Pendências de segurança antes de produção
 
-### Redis como session store
-
-```
-Estrutura no Redis:
-auth:refresh:{userId}:{tokenId} = <token_jwt>   TTL: 7d ou 30d
-auth:attempts:{email} = <contador>              TTL: 1h
-auth:locked:{email} = "1"                       TTL: 30min
-rate:ip:{ip}:{endpoint} = <contador>            TTL: 1h
-```
-
-### Por que Redis e não banco de dados?
-
-| Critério | PostgreSQL | Redis |
-|----------|-----------|-------|
-| Velocidade | ~2–5ms | ~0.1ms |
-| Operações atômicas | Via transação | Nativo (INCR, SETNX) |
-| TTL automático | Via cron job | Nativo |
-| Escala horizontal | Complexo | Redis Cluster |
-| Custo de consulta | Alto (auth a cada req) | Mínimo |
-
-### Multi-instância
-
-Com múltiplas réplicas da API (horizontal scaling):
-- Access tokens são validados **localmente** (sem I/O — só verificação de assinatura JWT)
-- Refresh tokens buscados no **Redis compartilhado** entre todas as instâncias
-- Rate limiting no **Redis compartilhado** (contadores consistentes)
-- Cada instância pode processar qualquer request de qualquer usuário
-
----
-
-## 6. Headers HTTP de Segurança (via Helmet)
-
-```
-Strict-Transport-Security: max-age=31536000; includeSubDomains
-X-Content-Type-Options: nosniff
-X-Frame-Options: DENY
-X-XSS-Protection: 1; mode=block
-Content-Security-Policy: default-src 'self'; ...
-Referrer-Policy: strict-origin-when-cross-origin
-Permissions-Policy: camera=(), microphone=(), geolocation=()
-```
-
----
-
-## 7. CORS
-
-Apenas origens explicitamente listadas são aceitas:
-```typescript
-const allowedOrigins = [
-  'https://auraeducacional.app',
-  'https://www.auraeducacional.app',
-  'https://app.auraeducacional.app',
-  'https://admin.auraeducacional.app',
-  process.env.NODE_ENV === 'development' ? 'http://localhost:3000' : '',
-].filter(Boolean)
-```
-
----
-
-## 8. Rate Limiting por Endpoint
-
-| Endpoint | Limite |
-|---------|--------|
-| `POST /auth/login` | 10 req/min por IP |
-| `POST /auth/register` | 5 req/min por IP |
-| `POST /auth/forgot-password` | 5 req/hora por IP |
-| `GET /api/*` (autenticado) | 200 req/min por usuário |
-| `POST /api/*` (autenticado) | 60 req/min por usuário |
-| `GET /api/*` (público) | 100 req/min por IP |
-
----
-
-## 9. Validação de Entrada (Zod)
-
-**Todo** dado que chega na API é validado com Zod antes de qualquer processamento:
-- Tipos corretos (string, number, email, uuid...)
-- Comprimento mínimo/máximo
-- Formatos (CPF, telefone, URLs)
-- SQL injection: Prisma usa prepared statements por padrão — queries seguras
-
----
-
-## 10. Auditoria (LoginHistory)
-
-Cada tentativa de login (bem-sucedida ou não) é registrada:
-```sql
-INSERT INTO login_history (userId, ipAddress, userAgent, success, failReason, createdAt)
-```
-
-Isso permite:
-- Detectar padrões suspeitos (logins de países incomuns)
-- Notificar usuário de login novo
-- Investigar incidentes de segurança
-- Evidência forense em disputas
-
----
-
-## 11. Checklist de Segurança para Deploy
-
-- [ ] `.env` com senhas fortes (min. 32 chars aleatórios)
-- [ ] `NODE_ENV=production`
-- [ ] HTTPS obrigatório (Nginx + Let's Encrypt)
-- [ ] PostgreSQL acessível apenas internamente (127.0.0.1)
-- [ ] Redis com senha e acessível apenas internamente
-- [ ] MinIO acessível apenas internamente
-- [ ] Firewall: apenas portas 80 e 443 abertas externamente
-- [ ] Backups automáticos do PostgreSQL (script: `infra/scripts/backup-db.sh`)
-- [ ] Stripe em modo produção (não test)
-- [ ] CORS configurado para domínios reais
-- [ ] Rate limiting ativo
-- [ ] Logs centralizados (Pino → arquivo ou serviço externo)
-- [ ] Monitoramento de erros (Sentry recomendado)
-
----
-
-## 12. Dados Sensíveis — O que NUNCA retornar na API
-
-```typescript
-// ❌ NUNCA retornar
-user.passwordHash
-user.twoFactorSecret
-user.loginAttempts
-user.lockedUntil
-payment.gatewayData (dados brutos do Stripe)
-passwordReset.token
-
-// ✅ Sempre usar sanitizeUser() antes de retornar dados de usuário
-return sanitizeUser(user)
-```
+- [ ] Implementar HMAC validation no webhook Mux (atualmente apenas registra).
+- [ ] Adicionar rate limit Hono em rotas sensíveis.
+- [ ] Configurar Sentry com PII scrubbing.
+- [ ] Implementar 2FA opcional para admins (Firebase Auth tem suporte).
+- [ ] Pen test antes do soft launch.

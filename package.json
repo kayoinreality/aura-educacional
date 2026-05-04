@@ -1,61 +1,34 @@
 {
   "name": "aura-educacional",
   "private": true,
-  "version": "1.0.0",
-  "packageManager": "npm@10.9.0",
-  "description": "Aura Educacional - Plataforma de cursos livres e certificados",
-  "workspaces": [
-    "frontend/*",
-    "backend/api",
-    "packages/*"
-  ],
-  "scripts": {
-    "dev": "turbo run dev",
-    "build": "turbo run build",
-    "test": "turbo run test",
-    "lint": "turbo run lint",
-    "format": "prettier --write \"**/*.{ts,tsx,md,json}\"",
-    "dev:web": "npm --workspace @aura/web run dev",
-    "dev:learning": "npm --workspace @aura/learning run dev",
-    "dev:admin": "npm --workspace @aura/admin run dev",
-    "dev:api": "npm --workspace @aura/api run dev",
-    "cf:build:web": "npm --workspace @aura/web run cf:build",
-    "cf:build:learning": "npm --workspace @aura/learning run cf:build",
-    "cf:build:admin": "npm --workspace @aura/admin run cf:build",
-    "db:migrate": "turbo run db:migrate",
-    "db:seed": "turbo run db:seed",
-    "db:generate:api": "npm --workspace @aura/api run db:generate",
-    "db:migrate:api": "npm --workspace @aura/api run db:migrate",
-    "db:seed:api": "npm --workspace @aura/api run db:seed",
-    "docker:up": "docker compose --env-file infra/docker/.env -f infra/docker/docker-compose.yml up -d",
-    "docker:down": "docker compose --env-file infra/docker/.env -f infra/docker/docker-compose.yml down",
-    "docker:dev:up": "docker compose --env-file infra/docker/.env -f infra/docker/docker-compose.dev.yml --profile tools up -d",
-    "docker:dev:down": "docker compose --env-file infra/docker/.env -f infra/docker/docker-compose.dev.yml --profile tools down",
-    "docker:dev:logs": "docker compose --env-file infra/docker/.env -f infra/docker/docker-compose.dev.yml logs -f",
-    "docker:dev:ps": "docker compose --env-file infra/docker/.env -f infra/docker/docker-compose.dev.yml ps",
-    "dev:admin-py": "cd backend/admin-py && python run.py",
-    "install:admin-py": "cd backend/admin-py && pip install -r requirements.txt"
-  },
-  "devDependencies": {
-    "turbo": "^2.0.0",
-    "prettier": "^3.3.0",
-    "typescript": "^5.5.0",
-    "@typescript-eslint/eslint-plugin": "^7.0.0",
-    "eslint": "^8.57.0",
-    "husky": "^9.0.0",
-    "lint-staged": "^15.0.0"
-  },
+  "version": "2.0.0",
+  "description": "Aura Educacional — plataforma de cursos livres com assinatura e certificados",
+  "packageManager": "pnpm@9.12.0",
   "engines": {
     "node": ">=20.0.0",
-    "npm": ">=10.0.0"
+    "pnpm": ">=9.0.0"
   },
-  "lint-staged": {
-    "*.{ts,tsx}": [
-      "eslint --fix",
-      "prettier --write"
-    ],
-    "*.{md,json,yml}": [
-      "prettier --write"
-    ]
+  "scripts": {
+    "build": "turbo run build",
+    "dev": "turbo run dev --parallel",
+    "lint": "turbo run lint",
+    "typecheck": "turbo run typecheck",
+    "test": "turbo run test",
+    "format": "prettier --write \"**/*.{ts,tsx,md,json}\"",
+    "clean": "turbo run clean && rm -rf node_modules",
+    "db:generate": "pnpm --filter @aura/db generate",
+    "db:migrate": "pnpm --filter @aura/db migrate",
+    "db:seed": "pnpm --filter @aura/db seed",
+    "db:studio": "pnpm --filter @aura/db studio",
+    "dev:web": "pnpm --filter @aura/web dev",
+    "dev:learn": "pnpm --filter @aura/learn dev",
+    "dev:admin": "pnpm --filter @aura/admin dev",
+    "dev:api": "pnpm --filter @aura/api dev"
+  },
+  "devDependencies": {
+    "turbo": "^2.3.0",
+    "prettier": "^3.4.0",
+    "typescript": "^5.7.0",
+    "@types/node": "^22.10.0"
   }
 }

@@ -1,208 +1,138 @@
-# Aura Educacional - Guia de Deploy
+# Deployment
 
-## Estrategia recomendada
+## Pré-requisitos
 
-Para o estado atual do projeto, o melhor caminho e:
+1. Conta Google Cloud com billing habilitado.
+2. CLI: `gcloud`, `firebase`, `pnpm`, `docker`, `psql`.
+3. Domínio (auraeducacional.com.br) com DNS gerenciável.
 
-- manter o monorepo
-- publicar os frontends no Cloudflare Pages, um projeto por subdominio
-- subir somente o backend/API e servicos internos na VPS
-- manter PostgreSQL, Redis e rotinas internas na VPS
-
-Isso preserva o compartilhamento de `packages/*` sem separar repositorios antes da hora.
-
-## Estrutura usada no deploy
-
-```text
-frontend/web       -> site publico em auraeducacional.app
-frontend/learning  -> area do aluno em app.auraeducacional.app
-frontend/admin     -> console administrativo em admin.auraeducacional.app
-backend/api        -> API principal em api.auraeducacional.app
-packages/*         -> codigo compartilhado
-```
-
-## Frontends no Cloudflare Pages
-
-Crie tres projetos Pages apontando para o mesmo repositorio GitHub e branch `main`.
-Como o projeto e um monorepo, mantenha o root directory como `/` e troque apenas o
-workspace usado no build.
-
-Cada frontend ja tem `wrangler.toml` com:
-- `compatibility_date = "2024-09-23"`
-- `compatibility_flags = ["nodejs_compat"]`
-
-O CF Pages le automaticamente o `wrangler.toml` do diretorio onde o `next build` roda.
-
-### Site publico
-
-```text
-Project name: aura-educacional
-Custom domains: auraeducacional.app, www.auraeducacional.app
-Framework preset: None (manual)
-Production branch: main
-Root directory: /
-Build command: npm install && npm --workspace @aura/web run cf:build
-Build output directory: frontend/web/.vercel/output/static
-```
-
-Variaveis de ambiente:
+## 1. Setup do projeto GCP
 
 ```bash
-NEXT_PUBLIC_API_URL=https://api.auraeducacional.app
-NEXT_PUBLIC_LEARNING_URL=https://app.auraeducacional.app
-NEXT_PUBLIC_GOOGLE_CLIENT_ID=seu-client-id.apps.googleusercontent.com
+gcloud auth login
+gcloud projects create auraeducacional --name="Aura Educacional"
+gcloud config set project auraeducacional
+# vincula billing pelo console: https://console.cloud.google.com/billing
+
+export PROJECT_ID=auraeducacional
+./infra/cloud-run/setup.sh
 ```
 
-### Area do aluno
+O script habilita APIs, cria Artifact Registry, service accounts, buckets GCS e queues do Cloud Tasks.
 
-```text
-Project name: aura-learning
-Custom domain: app.auraeducacional.app
-Framework preset: None (manual)
-Production branch: main
-Root directory: /
-Build command: npm install && npm --workspace @aura/learning run cf:build
-Build output directory: frontend/learning/.vercel/output/static
-```
-
-Variaveis de ambiente:
+## 2. Cloud SQL Postgres
 
 ```bash
-NEXT_PUBLIC_API_URL=https://api.auraeducacional.app
-NEXT_PUBLIC_SITE_URL=https://auraeducacional.app
+gcloud sql instances create aura-postgres \
+  --database-version=POSTGRES_16 \
+  --tier=db-custom-1-3840 \
+  --region=southamerica-east1 \
+  --storage-size=10GB \
+  --storage-auto-increase \
+  --backup-start-time=03:00
+
+gcloud sql users create aura_app \
+  --instance=aura-postgres \
+  --password=$(openssl rand -base64 24)
+
+gcloud sql databases create aura --instance=aura-postgres
 ```
 
-Variaveis:
+Salve a senha gerada. Monte a `DATABASE_URL` no formato:
+
+```
+postgresql://aura_app:<senha>@/aura?host=/cloudsql/auraeducacional:southamerica-east1:aura-postgres
+```
+
+## 3. Secrets
 
 ```bash
-NEXT_PUBLIC_API_URL=https://api.auraeducacional.app
-NEXT_PUBLIC_SITE_URL=https://auraeducacional.app
+echo -n "<DATABASE_URL>" | gcloud secrets create aura-database-url --data-file=-
+echo -n "sk_live_..."    | gcloud secrets create stripe-secret --data-file=-
+echo -n "whsec_..."      | gcloud secrets create stripe-webhook-secret --data-file=-
+echo -n "<MUX_TOKEN_SECRET>" | gcloud secrets create mux-token-secret --data-file=-
+echo -n "re_..."         | gcloud secrets create resend-api-key --data-file=-
 ```
 
-### Admin
-
-```text
-Project name: aura-admin
-Custom domain: admin.auraeducacional.app
-Framework preset: Next.js
-Production branch: main
-Root directory: /
-Build command: npm install && npm --workspace @aura/admin run cf:build
-Build output directory: frontend/admin/.vercel/output/static
-```
-
-Variaveis:
+Conceda acesso à service account do Cloud Run:
 
 ```bash
-NEXT_PUBLIC_API_URL=https://api.auraeducacional.app
+for secret in aura-database-url stripe-secret stripe-webhook-secret mux-token-secret resend-api-key; do
+  gcloud secrets add-iam-policy-binding $secret \
+    --member=serviceAccount:aura-api-sa@auraeducacional.iam.gserviceaccount.com \
+    --role=roles/secretmanager.secretAccessor
+done
 ```
 
-O Cloudflare Pages deve continuar usando Git integration. Assim, cada push na `main`
-gera deploy automatico dos tres projetos.
-
-## Backend na VPS
-
-### Variaveis de ambiente de producao
-
-Antes de subir a API, ajuste o `.env` com valores reais, por exemplo:
+## 4. Firebase
 
 ```bash
-NODE_ENV=production
-APP_URL=https://auraeducacional.app
-API_URL=https://api.auraeducacional.app
-CORS_ORIGINS=https://auraeducacional.app,https://www.auraeducacional.app,https://app.auraeducacional.app,https://admin.auraeducacional.app
-COOKIE_DOMAIN=.auraeducacional.app
+cd infra/firebase
+firebase login
+firebase projects:addfirebase auraeducacional   # se ainda não fez
+firebase use auraeducacional
+
+# Cria hosting sites para cada subdomínio
+firebase hosting:sites:create aura-web-prod
+firebase hosting:sites:create aura-learn-prod
+firebase hosting:sites:create aura-admin-prod
 ```
 
-Use `COOKIE_DOMAIN=.auraeducacional.app` para compartilhar o cookie de refresh entre
-os subdominios do site, app do aluno e admin.
+No console do Firebase:
+1. **Authentication** → habilita Google + Email/Password.
+2. **Authorized domains** → adiciona auraeducacional.com.br, app.*, admin.*.
+3. **Storage** → cria buckets `aura-files` e `aura-certificates` (ou aponta para os criados via gsutil).
 
-### CORS e autenticacao cross-origin
+Pega as credenciais do Firebase Web SDK (Settings → Your apps → Web) e preenche `.env` com `NEXT_PUBLIC_FIREBASE_*`.
 
-O backend precisa aceitar:
+## 5. Migrations + seed
 
-- a origem do frontend publicado
-- `credentials: include`
-- cookie `refresh_token` com `SameSite=None` e `Secure=true` em producao quando frontend e API
-  estiverem em origens diferentes
-
-Esses ajustes ja foram implementados no projeto.
-
-## Deploy na VPS - passo a passo
-
-### 1. Preparar o servidor
+Em dev local, rode migration apontando para Cloud SQL via Auth Proxy:
 
 ```bash
-apt update && apt upgrade -y
-curl -fsSL https://get.docker.com | sh
-usermod -aG docker $USER
-apt install docker-compose-plugin -y
-
-ufw allow 22/tcp
-ufw allow 80/tcp
-ufw allow 443/tcp
-ufw enable
+cloud_sql_proxy -instances=auraeducacional:southamerica-east1:aura-postgres=tcp:5432 &
+DATABASE_URL_LOCAL="postgresql://aura_app:<senha>@localhost:5432/aura" pnpm db:migrate
+DATABASE_URL_LOCAL="postgresql://aura_app:<senha>@localhost:5432/aura" pnpm db:seed
 ```
 
-### 2. Configurar DNS
-
-No Cloudflare DNS, os frontends devem ser ligados pelos Custom Domains do Pages.
-Para a API na VPS, adicione:
-
-```text
-A    api    -> IP_DO_SERVIDOR
-```
-
-Nao aponte `@`, `www`, `app` ou `admin` para a VPS se eles estiverem no Pages.
-
-### 3. Clonar e configurar
+## 6. Deploy via Cloud Build
 
 ```bash
-cd /opt
-git clone https://github.com/seu-usuario/aura-educacional.git
-cd aura-educacional
-
-cp .env.example .env
-nano .env
+gcloud builds submit --config infra/cloud-run/cloudbuild.yaml
 ```
 
-Para gerar secrets seguros:
+O pipeline builda 4 imagens, sobe para Artifact Registry e faz deploy em Cloud Run.
+
+## 7. Firebase Hosting (rewrites para Cloud Run)
 
 ```bash
-node -e "console.log(require('crypto').randomBytes(64).toString('hex'))"
+cd infra/firebase
+firebase deploy --only hosting
 ```
 
-### 4. Subir infraestrutura e aplicar banco
+Aponta DNS:
+- `auraeducacional.com.br` → A/AAAA do Firebase Hosting (web)
+- `app.auraeducacional.com.br` → idem (learn)
+- `admin.auraeducacional.com.br` → idem (admin)
+- `api.auraeducacional.com.br` → CNAME do Cloud Run (mapeamento direto via `gcloud run domain-mappings create`)
+
+## 8. Webhooks externos
+
+- **Stripe Dashboard** → Developers → Webhooks → endpoint `https://api.auraeducacional.com.br/webhooks/stripe`. Eventos: `checkout.session.completed`, `customer.subscription.*`, `invoice.payment_*`, `charge.refunded`.
+- **Mux Dashboard** → Settings → Webhooks → endpoint `https://api.auraeducacional.com.br/webhooks/mux`.
+
+## 9. Verificação
 
 ```bash
-npm install
-npm run docker:up
-npm run db:migrate:api
-npm run db:seed:api
+curl https://api.auraeducacional.com.br/health
+# → { "status": "ok", "service": "aura-api", ... }
+
+curl https://auraeducacional.com.br
+# → HTML da landing
 ```
 
-### 5. Validar a API
+## 10. Monitoring
 
-```bash
-curl https://api.auraeducacional.app/health
-```
-
-### 6. Ver logs
-
-```bash
-docker compose --env-file infra/docker/.env -f infra/docker/docker-compose.yml logs api --tail=50
-docker compose --env-file infra/docker/.env -f infra/docker/docker-compose.yml logs postgres --tail=50
-docker compose --env-file infra/docker/.env -f infra/docker/docker-compose.yml logs redis --tail=50
-```
-
-## Checklist rapido de producao
-
-- tres frontends publicados no Cloudflare Pages
-- `NEXT_PUBLIC_API_URL` apontando para a API real
-- `NEXT_PUBLIC_LEARNING_URL` apontando para `https://app.auraeducacional.app`
-- backend com `NODE_ENV=production`
-- `APP_URL` e `API_URL` corretos
-- `CORS_ORIGINS` contendo site publico, learning e admin
-- HTTPS ativo na API
-- Stripe webhook apontando para a URL publica da API
-- Google OAuth com dominios autorizados de producao
+- Cloud Logging: `gcloud logging read 'resource.type=cloud_run_revision'`.
+- Sentry: configure DSN em `apps/web` e `apps/api`.
+- Uptime check: Cloud Monitoring → Synthetic monitors apontando para `/health` da API.

@@ -1,0 +1,23 @@
+rules_version = '2';
+
+// Firebase Storage rules.
+// Buckets:
+//  - aura-files/        — capas, anexos públicos (read all)
+//  - aura-certificates/ — PDFs (acesso somente via signed URL gerada pela API)
+
+service firebase.storage {
+  match /b/{bucket}/o {
+
+    // Capas e anexos: leitura pública, escrita só pela API (admin SDK)
+    match /files/{allPaths=**} {
+      allow read: if true;
+      allow write: if false; // somente Admin SDK (server-side)
+    }
+
+    // Certificados: acesso apenas via signed URL emitida pela API
+    match /certificates/{allPaths=**} {
+      allow read: if false;
+      allow write: if false;
+    }
+  }
+}

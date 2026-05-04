@@ -1,0 +1,84 @@
+@import 'tailwindcss';
+
+@theme {
+  --color-navy-50: #f2f4f9;
+  --color-navy-100: #e5e9f2;
+  --color-navy-200: #c5cde0;
+  --color-navy-300: #94a1c5;
+  --color-navy-400: #5c6fa0;
+  --color-navy-500: #1f3478;
+  --color-navy-600: #152659;
+  --color-navy-700: #0f1e47;
+  --color-navy-800: #0a1432;
+  --color-navy-900: #060b1f;
+
+  --color-gold-50: #fbf7ec;
+  --color-gold-100: #f5edd9;
+  --color-gold-200: #ebddb3;
+  --color-gold-300: #dec78d;
+  --color-gold-400: #d4b97a;
+  --color-gold-500: #c9a961;
+  --color-gold-600: #a88845;
+  --color-gold-700: #7e6633;
+
+  --color-ivory: #faf8f3;
+  --color-paper: #ffffff;
+  --color-ink-900: #1a1a1a;
+  --color-ink-700: #3a3a3a;
+  --color-ink-600: #4a4a4a;
+  --color-ink-500: #6a6a6a;
+  --color-ink-400: #7a7a7a;
+  --color-border: #e8e4da;
+}
+
+:root {
+  --font-display: 'Fraunces', Georgia, serif;
+  --font-sans: 'Inter', system-ui, sans-serif;
+  --font-mono: 'JetBrains Mono', monospace;
+}
+
+html {
+  scroll-behavior: smooth;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+body {
+  background-color: var(--color-ivory);
+  color: var(--color-ink-900);
+  font-family: var(--font-sans);
+}
+
+::selection {
+  background-color: var(--color-gold-200);
+  color: var(--color-navy-900);
+}
+
+/* Botão CTA com shimmer dourado sutil (apenas .btn-primary-shimmer) */
+.btn-shimmer {
+  position: relative;
+  overflow: hidden;
+}
+.btn-shimmer::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    rgba(255, 255, 255, 0.25) 50%,
+    transparent 100%
+  );
+  background-size: 200% 100%;
+  animation: shimmer 4s ease-in-out infinite;
+  pointer-events: none;
+}
+
+@keyframes shimmer {
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
+}

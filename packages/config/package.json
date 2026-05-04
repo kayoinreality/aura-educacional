@@ -1,0 +1,23 @@
+{
+  "name": "@aura/config",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    "./tsconfig/base.json": "./tsconfig/base.json",
+    "./tsconfig/next.json": "./tsconfig/next.json",
+    "./tsconfig/node.json": "./tsconfig/node.json",
+    "./tailwind": "./tailwind.preset.ts",
+    "./eslint": "./eslint.config.mjs"
+  },
+  "files": [
+    "tsconfig",
+    "tailwind.preset.ts",
+    "eslint.config.mjs"
+  ],
+  "devDependencies": {
+    "@types/node": "^22.10.0",
+    "tailwindcss": "^4.0.0",
+    "typescript": "^5.7.0"
+  }
+}

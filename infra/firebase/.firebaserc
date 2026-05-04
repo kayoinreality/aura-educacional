@@ -1,0 +1,14 @@
+{
+  "projects": {
+    "default": "auraeducacional"
+  },
+  "targets": {
+    "auraeducacional": {
+      "hosting": {
+        "web": ["aura-web-prod"],
+        "learn": ["aura-learn-prod"],
+        "admin": ["aura-admin-prod"]
+      }
+    }
+  }
+}

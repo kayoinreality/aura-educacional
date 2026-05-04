@@ -12,23 +12,24 @@ node_modules/
 # Build outputs
 .next/
 .vercel/
+.open-next/
+.wrangler/
 dist/
 build/
 out/
 .turbo/
 *.tsbuildinfo
 
-# Database
+# Drizzle
+**/drizzle/migrations/meta/
 *.db
 *.sqlite
-
-# Prisma generated
-apps/api/src/database/generated/
 
 # Logs
 *.log
 logs/
 npm-debug.log*
+pnpm-debug.log*
 
 # OS
 .DS_Store
@@ -38,15 +39,11 @@ Thumbs.db
 .vscode/settings.json
 .idea/
 *.swp
-.git-codex-empty-backup/
-
-# Uploads / storage
-apps/api/uploads/
-infra/docker/data/
-
-# SSL certs (gerenciados pelo certbot)
-infra/nginx/certs/
 
 # Coverage
 coverage/
 .nyc_output/
+
+# Playwright
+playwright-report/
+test-results/

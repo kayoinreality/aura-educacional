@@ -1,7 +1,13 @@
 {
   "name": "@aura/types",
-  "version": "0.1.0",
+  "version": "0.0.0",
   "private": true,
-  "main": "index.js",
-  "types": "index.d.ts"
+  "type": "module",
+  "exports": { ".": "./src/index.ts" },
+  "scripts": { "lint": "eslint .", "typecheck": "tsc --noEmit" },
+  "dependencies": { "zod": "^3.23.8" },
+  "devDependencies": {
+    "@aura/config": "workspace:*",
+    "typescript": "^5.7.0"
+  }
 }
